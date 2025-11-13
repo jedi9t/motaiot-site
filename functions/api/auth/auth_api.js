@@ -1,62 +1,53 @@
 // /functions/api/auth/auth_api.js
 
+// 🚨 修正: 在 Cloudflare Pages Functions (Edge Runtime) 中，
+// 应该使用 @auth/core 来替代 next-auth。
+
 import { Auth } from "@auth/core"; 
+// import NextAuth from "next-auth"
 import { D1Adapter } from "@auth/d1-adapter";
 
 // 导入身份提供者
+//GOOGLE: https://authjs.dev/getting-started/providers/google
 import Google from "@auth/core/providers/google"; 
-import GitHub from "@auth/core/providers/github";
-import Discord from "@auth/core/providers/discord";
-import LinkedIn from "@auth/core/providers/linkedin"; 
-import Reddit from "@auth/core/providers/reddit";
-import Twitter from "@auth/core/providers/twitter"; 
+// import GitHub from "@auth/core/providers/github";
+// import Discord from "@auth/core/providers/discord";
+// import LinkedIn from "@auth/core/providers/linkedin"; 
+// import Reddit from "@auth/core/providers/reddit";
+// import Twitter from "@auth/core/providers/twitter"; 
 
-/**
- * Auth.js 的配置选项
- * * 注意：在 Cloudflare Pages Functions 的 Edge Runtime 中，
- * 推荐使用 globalThis.env 来访问环境变量和绑定。
- */
-const config = {
-  // 1. 路由配置
+
+
+// 配置 Auth.js 选项
+const authOptions = (env) => ({
   basePath: "/api/auth", 
-
-  // 2. 数据库适配器：传入 D1 绑定
-  adapter: D1Adapter(globalThis.env.hugo_auth_db), 
-
-  // 3. 身份提供者配置
+  // 1. D1 适配器配置：使用 Pages Functions 注入的 D1 绑定
+  // 注意：hugo_auth_db 必须在 Cloudflare Pages 仪表板中正确绑定到 D1 数据库
+  adapter: D1Adapter(env.hugo_auth_db), 
+  
+  // 2. 会话策略
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+  },
+  
+  // 3. 配置 Providers
   providers: [
-    GitHub({ 
-      clientId: globalThis.env.GITHUB_ID, 
-      clientSecret: globalThis.env.GITHUB_SECRET 
-    }),
-    Google({
-      clientId: globalThis.env.GOOGLE_ID,
-      clientSecret: globalThis.env.GOOGLE_SECRET
-    }),
-    Discord({ 
-      clientId: globalThis.env.DISCORD_ID, 
-      clientSecret: globalThis.env.DISCORD_SECRET 
-    }),
-    LinkedIn({ 
-      clientId: globalThis.env.LINKEDIN_ID, 
-      clientSecret: globalThis.env.LINKEDIN_SECRET 
-    }),
-    Reddit({ 
-      clientId: globalThis.env.REDDIT_ID, 
-      clientSecret: globalThis.env.REDDIT_SECRET 
-    }),
-    Twitter({ 
-      clientId: globalThis.env.TWITTER_ID, 
-      clientSecret: globalThis.env.TWITTER_SECRET 
-    }),
+    Google({clientId: env.GOOGLE_ID,clientSecret: env.GOOGLE_SECRET }),
+    // GitHub({ clientId: env.GITHUB_ID, clientSecret: env.GITHUB_SECRET }),
+    // Discord({ clientId: env.DISCORD_ID, clientSecret: env.DISCORD_SECRET }),
+    // LinkedIn({ clientId: env.LINKEDIN_ID, clientSecret: env.LINKEDIN_SECRET }),
+    // Reddit({ clientId: env.REDDIT_ID, clientSecret: env.REDDIT_SECRET }),
+    // Twitter({ clientId: env.TWITTER_ID, clientSecret: env.TWITTER_SECRET }),
   ],
 
-  // 4. 安全和会话配置
-  secret: globalThis.env.AUTH_SECRET,
-  session: { strategy: "jwt" },
-  pages: { signIn: '/login' },
+  // 4. 必需的密钥
+  secret: env.AUTH_SECRET,
+  
+  // 5. ⚠️ 修正：在 Pages Functions 中不需要设置 basePath，路径由文件路由决定
+  // basePath: "/api/auth", 
 
-  // 5. [可选但推荐] 回调函数：将用户ID添加到 JWT 和 Session 中
+  // 6. 回调函数：将用户ID添加到 JWT 和 Session 中
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
@@ -73,24 +64,26 @@ const config = {
       return session;
     },
   },
-};
+});
 
-
-// Pages Functions 的入口点
 /**
+ * Cloudflare Pages Functions 的入口点
  * @param {object} context - 包含 request, env, params 的对象
  */
 export async function onRequest(context) {
-  const url = new URL(context.request.url);
+  // 1. 获取 Auth.js 配置
+  const config = authOptions(context.env);
 
-  // 关键操作：修改请求 URL 以匹配 Auth.js 内部期望的路由结构
-  // 例如：将 /api/auth/signin/github 转换为 /signin/github (移除 basePath)
+  // 2. 路径重写：Auth.js 核心期望的请求路径不包含 Pages Function 的文件路由前缀。
+  // 我们将 /auth 路由段移除，以匹配 Auth.js 内部的路由期望。
+  
+  const url = new URL(context.request.url);
+  // url.pathname = url.pathname.replace('/auth', ''); 
   url.pathname = url.pathname.replace(config.basePath, '');
 
-  // 确保 Auth.js 接收到一个新的 Request 对象，其中包含修改后的 URL 路径
-  return Auth(new Request(url, context.request), config);
-}
+  // 3. 创建一个新的请求对象，保留原有信息但使用新的 URL 路径
+  const requestWithNewUrl = new Request(url, context.request);
 
-// ----------------------------------------------------
-// 提示：之前的 'const authOptions' 代码块已被删除，以清理文件。
-// ----------------------------------------------------
+  // 4. 调用 Auth.js 核心
+  return Auth(requestWithNewUrl, config);
+}
