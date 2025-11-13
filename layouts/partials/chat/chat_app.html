@@ -1,0 +1,49 @@
+<section id="chat-app-container">
+    <div id="chat-history" class="h-64 overflow-y-scroll border p-4 mb-4">
+        </div>
+    <div class="flex">
+        <input type="text" id="chat-input" placeholder="输入您的问题..." class="flex-grow p-2 border rounded-l-md" />
+        <button id="send-btn" class="btn btn-primary rounded-l-none">发送</button>
+    </div>
+</section>
+
+<script>
+async function sendMessage() {
+    const inputElement = document.getElementById('chat-input');
+    const message = inputElement.value;
+    const historyDiv = document.getElementById('chat-history');
+
+    if (!message) return;
+
+    // 1. 获取当前会话信息（必须在发送前确认用户 ID）
+    const sessionResponse = await fetch('/api/auth/session');
+    const session = await sessionResponse.json();
+    if (!session || !session.user) {
+        alert("请先登录！");
+        return;
+    }
+    const userId = session.user.id;
+    
+    // 2. 显示用户消息
+    historyDiv.innerHTML += `<div class="text-right text-blue-600"><strong>您:</strong> ${message}</div>`;
+    inputElement.value = '';
+    
+    // 3. 调用聊天 API
+    const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, message }),
+    });
+
+    const data = await response.json();
+    
+    // 4. 显示 AI 响应
+    historyDiv.innerHTML += `<div class="text-left text-green-600"><strong>AI:</strong> ${data.reply}</div>`;
+    historyDiv.scrollTop = historyDiv.scrollHeight; // 滚动到底部
+}
+
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+document.getElementById('chat-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+</script>
