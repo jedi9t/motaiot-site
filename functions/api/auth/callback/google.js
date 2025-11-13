@@ -32,11 +32,11 @@ export async function onRequest(context) {
 
     try {
         // --- 1. 验证 State (CSRF 保护) ---
-        // 查找 D1 中的临时会话 (仍然使用 state 作为 sessionId 的值进行查询)
+        // 查找 D1 中的临时会话 (仍然使用 state 作为 sessionId 的值进行查询)        
         const { results } = await db.prepare(
-            // SQL 保持一致：查询主键 id (即 state) 和 userId='GUEST_STATE'
-            `SELECT expires FROM sessions WHERE id = ?1 AND userId = ?2` 
-        ).bind(state, 'GUEST_STATE').all(); // 使用 .all() 或 .first()
+        // 查询 State 是否存在，以及是否未过期
+        `SELECT expires FROM sessions WHERE id = ?1 AND userId = ?2`
+        ).bind(state, 'GUEST_STATE').all();
 
         if (results.length === 0 || Date.now() > results[0].expires) {
             // 🚨 关键修正：确保删除语句使用 await

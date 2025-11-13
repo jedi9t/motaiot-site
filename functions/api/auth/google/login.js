@@ -13,9 +13,11 @@ export async function onRequest(context) {
 
     // 🚨 关键修正：使用 .run() 并使用 await 等待写入完成
     // 确保 D1 写入完成，否则 state 在回调时找不到
-    await db.prepare(
-        `INSERT INTO sessions (id, userId, sessionToken, expires) VALUES (?1, ?2, ?3, ?4)`
-    ).bind(sessionId, userId, sessionId, expires).run(); // 使用 .run() 而不是 .all()
+    await env.hugo_auth_db.prepare(
+    // 使用明确的问号绑定符
+    `INSERT INTO sessions (id, userId, sessionToken, expires) VALUES (?, ?, ?, ?)`
+    ).bind(state, 'GUEST_STATE', state, expires).run(); // 确保使用了 await .run()
+    
 
     // 2. 构造 Google OAuth 授权 URL (保持不变)
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
