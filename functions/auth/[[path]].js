@@ -3,22 +3,22 @@
 // 🚨 修正: 在 Cloudflare Pages Functions (Edge Runtime) 中，
 // 应该使用 @auth/core 来替代 next-auth。
 
-// import { Auth } from "@auth/core"; 
-import NextAuth from "next-auth"
+import { Auth } from "@auth/core"; 
+// import NextAuth from "next-auth"
 import { D1Adapter } from "@auth/d1-adapter";
 
 // 导入身份提供者
-// import Google from "@auth/core/providers/google"; 
-// import Discord from "@auth/core/providers/discord";
-// import LinkedIn from "@auth/core/providers/linkedin"; 
-// import Reddit from "@auth/core/providers/reddit";
-// import Twitter from "@auth/core/providers/twitter"; 
+import Google from "@auth/core/providers/google"; 
+import Discord from "@auth/core/providers/discord";
+import LinkedIn from "@auth/core/providers/linkedin"; 
+import Reddit from "@auth/core/providers/reddit";
+import Twitter from "@auth/core/providers/twitter"; 
 //GOOGLE: https://authjs.dev/getting-started/providers/google
-import Google from "next-auth/providers/google"; 
-import Discord from "next-auth/providers/discord";
-import LinkedIn from "next-auth/providers/linkedin"; 
-import Reddit from "next-auth/providers/reddit";
-import Twitter from "next-auth/providers/twitter"; 
+// import Google from "next-auth/providers/google"; 
+// import Discord from "next-auth/providers/discord";
+// import LinkedIn from "next-auth/providers/linkedin"; 
+// import Reddit from "next-auth/providers/reddit";
+// import Twitter from "next-auth/providers/twitter"; 
 
 /**
  * Auth.js 的配置选项
@@ -86,5 +86,5 @@ export async function onRequest(context) {
   const requestWithNewUrl = new Request(url, context.request);
 
   // 4. 调用 Auth.js 核心
-  return NextAuth(requestWithNewUrl, config);
+  return Auth(requestWithNewUrl, config);
 }
