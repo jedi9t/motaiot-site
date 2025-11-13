@@ -1,51 +1,30 @@
-// /functions/api/auth/google/login.js (修正后)
+// /functions/api/auth/google/login.js (修正 D1 写入，确保写入完成)
 
 export async function onRequest(context) {
-    const { env } = context;    
+    const { env } = context;
     const state = crypto.randomUUID(); 
     const db = env.hugo_auth_db;
-    
-    // 1. 将 state 及其过期时间存入 D1 数据库 (使用 sessions 表的结构)
-    const sessionId = state; // 将 state 作为 sessionId
-    const userId = 'GUEST_STATE'; // 标记为临时会话
+
+    // 1. D1 数据库写入 State
+    const sessionId = state; 
+    const userId = 'GUEST_STATE'; 
     const maxAgeSeconds = 300; // 5 分钟
     const expires = Date.now() + (maxAgeSeconds * 1000); 
 
+    // 🚨 关键修正：使用 .run() 并使用 await 等待写入完成
+    // 确保 D1 写入完成，否则 state 在回调时找不到
     await db.prepare(
-        `INSERT INTO sessions (sessionId, userId, expires) VALUES (?1, ?2, ?3)`
-    ).bind(sessionId, userId, expires).run();
+        `INSERT INTO sessions (id, userId, sessionToken, expires) VALUES (?1, ?2, ?3, ?4)`
+    ).bind(sessionId, userId, sessionId, expires).run(); // 使用 .run() 而不是 .all()
 
-    // 2. 构造 Google OAuth 授权 URL
+    // 2. 构造 Google OAuth 授权 URL (保持不变)
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', env.GOOGLE_ID);
-    authParams.searchParams.set('redirect_uri', 'https://motaiot.com/api/auth/callback/google');
+    authUrl.searchParams.set('redirect_uri', 'https://motaiot.com/api/auth/callback/google');
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('scope', 'openid email profile');
-    authUrl.searchParams.set('state', state); // state 仍然通过 URL 传递
+    authUrl.searchParams.set('state', state);
 
     // 3. 重定向用户 (无需设置 Set-Cookie)
     return Response.redirect(authUrl.toString(), 302);
 }
-// /functions/api/auth/google/login.js
-
-// export async function onRequest(context) {
-//     const { env } = context;
-    
-//     // 生成一个随机的 state 值以防止 CSRF 攻击
-//     const state = crypto.randomUUID(); 
-//     // 将 state 存入 Cookie，以便在回调时验证
-//     const stateCookie = `google_oauth_state=${state}; HttpOnly; Secure; Max-Age=3600; Path=/`;
-
-//     // 构造 Google OAuth 授权 URL
-//     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-//     authUrl.searchParams.set('client_id', env.GOOGLE_ID);
-//     authUrl.searchParams.set('redirect_uri', 'https://motaiot.com/api/auth/callback/google');
-//     authUrl.searchParams.set('response_type', 'code');
-//     authUrl.searchParams.set('scope', 'openid email profile'); // 请求 email 和 profile 权限
-//     authUrl.searchParams.set('state', state);
-    
-//     // 重定向用户并设置 state cookie
-//     return Response.redirect(authUrl.toString(), 302, {
-//         'Set-Cookie': stateCookie
-//     });
-// }

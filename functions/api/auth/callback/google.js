@@ -34,19 +34,20 @@ export async function onRequest(context) {
         // --- 1. 验证 State (CSRF 保护) ---
         // 查找 D1 中的临时会话 (仍然使用 state 作为 sessionId 的值进行查询)
         const { results } = await db.prepare(
-            // 假设 sessions 表的 PRIMARY KEY 是 id，存储了 state
+            // SQL 保持一致：查询主键 id (即 state) 和 userId='GUEST_STATE'
             `SELECT expires FROM sessions WHERE id = ?1 AND userId = ?2` 
-        ).bind(state, 'GUEST_STATE').all(); 
+        ).bind(state, 'GUEST_STATE').all(); // 使用 .all() 或 .first()
 
         if (results.length === 0 || Date.now() > results[0].expires) {
-            db.prepare(`DELETE FROM sessions WHERE id = ?1`).bind(state).run();
+            // 🚨 关键修正：确保删除语句使用 await
+            await db.prepare(`DELETE FROM sessions WHERE id = ?1`).bind(state).run();
             return new Response('State validation failed: State not found or expired.', { 
                 status: 401,
                 headers: { 'Set-Cookie': clearStateCookie }
             });
         }
         // State 验证成功，立即从 D1 中删除，防止重放攻击
-        db.prepare(`DELETE FROM sessions WHERE id = ?1`).bind(state).run();
+        await db.prepare(`DELETE FROM sessions WHERE id = ?1`).bind(state).run(); // 🚨 确保 await
 
 
         // --- 2. 交换 Token (保持不变) ---
