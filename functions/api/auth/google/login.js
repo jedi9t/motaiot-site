@@ -6,7 +6,9 @@ export async function onRequest(context) {
     const state = crypto.randomUUID(); 
     
     // 关键修正：确保 Path=/，使整个 motaiot.com 域都可以访问这个 Cookie
-    const stateCookie = `google_oauth_state=${state}; HttpOnly; Secure; Max-Age=3600; Path=/`;
+    // const stateCookie = `google_oauth_state=${state}; HttpOnly; Secure; Max-Age=3600; Path=/`;
+    // 关键修正：确保 HttpOnly, Secure, Path=/ 都已设置
+    const stateCookie = `google_oauth_state=${state}; HttpOnly; Secure; Max-Age=3600; Path=/; SameSite=Lax`;
 
     // 构造 Google OAuth 授权 URL
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -17,11 +19,18 @@ export async function onRequest(context) {
     authUrl.searchParams.set('state', state);
 
     // 重定向用户并设置 state cookie
+    // return new Response(null, {
+    //     status: 302,
+    //     headers: {
+    //         'Location': authUrl.toString(),
+    //         'Set-Cookie': stateCookie // 确保 Cookie 设置在响应头中
+    //     }
+    // });
     return new Response(null, {
         status: 302,
         headers: {
             'Location': authUrl.toString(),
-            'Set-Cookie': stateCookie // 确保 Cookie 设置在响应头中
+            'Set-Cookie': stateCookie 
         }
     });
 }

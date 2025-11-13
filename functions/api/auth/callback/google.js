@@ -63,9 +63,13 @@ export async function onRequest(context) {
             }),
         });
 
+
         if (!tokenResponse.ok) {
-            console.error("Token exchange failed:", await tokenResponse.text());
-            return new Response('Token exchange failed', { status: 500 });
+            // 🚨 关键调试点：打印 Google 返回的详细错误
+            const errorBody = await tokenResponse.text();
+            console.error("Token exchange failed:", errorBody);
+            // 避免返回 401，返回 500 以区分是服务器内部问题
+            return new Response('Token exchange failed: check function logs for details.', { status: 500 });
         }
         
         const { access_token } = await tokenResponse.json();
