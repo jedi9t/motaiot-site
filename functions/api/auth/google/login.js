@@ -15,7 +15,7 @@ export async function onRequest(context) {
         `INSERT INTO sessions (sessionId, userId, expires) VALUES (?1, ?2, ?3)`
     ).bind(sessionId, userId, expires).run();
 
-    / 2. 构造 Google OAuth 授权 URL
+    // 2. 构造 Google OAuth 授权 URL
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', env.GOOGLE_ID);
     authParams.searchParams.set('redirect_uri', 'https://motaiot.com/api/auth/callback/google');
