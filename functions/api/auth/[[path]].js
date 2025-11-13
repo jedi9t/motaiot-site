@@ -5,7 +5,7 @@
 
 import { Auth } from "@auth/core"; 
 // import NextAuth from "next-auth"
-import { D1Adapter } from "@auth/d1-adapter";
+// import { D1Adapter } from "@auth/d1-adapter";
 
 // 导入身份提供者
 import Google from "@auth/core/providers/google"; 
@@ -27,7 +27,7 @@ import Google from "@auth/core/providers/google";
 const authOptions = (env) => ({
   // 1. D1 适配器配置：使用 Pages Functions 注入的 D1 绑定
   // 注意：hugo_auth_db 必须在 Cloudflare Pages 仪表板中正确绑定到 D1 数据库
-  adapter: D1Adapter(env.hugo_auth_db), 
+  // adapter: D1Adapter(env.hugo_auth_db), 
   
   // 2. 会话策略
   session: {
