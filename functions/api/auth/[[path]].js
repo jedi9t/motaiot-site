@@ -9,10 +9,10 @@ import { D1Adapter } from "@auth/d1-adapter";
 
 // 导入身份提供者
 import Google from "@auth/core/providers/google"; 
-import Discord from "@auth/core/providers/discord";
-import LinkedIn from "@auth/core/providers/linkedin"; 
-import Reddit from "@auth/core/providers/reddit";
-import Twitter from "@auth/core/providers/twitter"; 
+// import Discord from "@auth/core/providers/discord";
+// import LinkedIn from "@auth/core/providers/linkedin"; 
+// import Reddit from "@auth/core/providers/reddit";
+// import Twitter from "@auth/core/providers/twitter"; 
 //GOOGLE: https://authjs.dev/getting-started/providers/google
 // import Google from "next-auth/providers/google"; 
 // import Discord from "next-auth/providers/discord";
@@ -38,10 +38,10 @@ const authOptions = (env) => ({
   // 3. 配置 Providers
   providers: [
     Google({ clientId: env.GOOGLE_ID, clientSecret: env.GOOGLE_SECRET }),
-    Discord({ clientId: env.DISCORD_ID, clientSecret: env.DISCORD_SECRET }),
-    LinkedIn({ clientId: env.LINKEDIN_ID, clientSecret: env.LINKEDIN_SECRET }),
-    Reddit({ clientId: env.REDDIT_ID, clientSecret: env.REDDIT_SECRET }),
-    Twitter({ clientId: env.TWITTER_ID, clientSecret: env.TWITTER_SECRET }),
+    // Discord({ clientId: env.DISCORD_ID, clientSecret: env.DISCORD_SECRET }),
+    // LinkedIn({ clientId: env.LINKEDIN_ID, clientSecret: env.LINKEDIN_SECRET }),
+    // Reddit({ clientId: env.REDDIT_ID, clientSecret: env.REDDIT_SECRET }),
+    // Twitter({ clientId: env.TWITTER_ID, clientSecret: env.TWITTER_SECRET }),
   ],
 
   // 4. 必需的密钥
@@ -74,18 +74,36 @@ const authOptions = (env) => ({
  * @param {object} context - 包含 request, env, params 的对象
  */
 export async function onRequest(context) {
-  // 1. 获取 Auth.js 配置
   const config = authOptions(context.env);
 
-  // 2. 路径重写：Auth.js 核心期望的请求路径不包含 Pages Function 的文件路由前缀。
-  // 我们将 /auth 路由段移除，以匹配 Auth.js 内部的路由期望。
-  const url = new URL(context.request.url);
-  // url.pathname = url.pathname.replace('/auth', ''); 
-  url.pathname = url.pathname.replace('/api/auth', '');
+  // 1. 获取 Auth.js 所需的动态路径部分 (例如：['session'] 或 ['signin', 'github'])
+  // Cloudflare Pages 会将 [[path]] 的值放在 context.params._path
+  const path = context.params._path; 
 
-  // 3. 创建一个新的请求对象，保留原有信息但使用新的 URL 路径
-  const requestWithNewUrl = new Request(url, context.request);
+  // 2. 构造 Auth.js 期望的内部 URL 结构
+  // Auth.js 核心需要一个基础的 /auth 路径前缀
+  const authUrl = new URL(context.request.url);
+  
+  // 关键修正：手动设置 pathname 为 /auth/[path segments]
+  // 确保 Auth.js 认为它是标准 NextAuth API 路由
+  authUrl.pathname = `/auth/${path.join('/')}`; 
 
-  // 4. 调用 Auth.js 核心
-  return Auth(requestWithNewUrl, config);
+  // 3. 调用 Auth.js 核心
+  return Auth(new Request(authUrl, context.request), config);
 }
+// export async function onRequest(context) {
+//   // 1. 获取 Auth.js 配置
+//   const config = authOptions(context.env);
+
+//   // 2. 路径重写：Auth.js 核心期望的请求路径不包含 Pages Function 的文件路由前缀。
+//   // 我们将 /auth 路由段移除，以匹配 Auth.js 内部的路由期望。
+//   const url = new URL(context.request.url);
+//   // url.pathname = url.pathname.replace('/auth', ''); 
+//   url.pathname = url.pathname.replace('/api/auth', '');
+
+//   // 3. 创建一个新的请求对象，保留原有信息但使用新的 URL 路径
+//   const requestWithNewUrl = new Request(url, context.request);
+
+//   // 4. 调用 Auth.js 核心
+//   return Auth(requestWithNewUrl, config);
+// }
