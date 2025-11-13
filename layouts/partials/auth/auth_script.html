@@ -1,0 +1,52 @@
+<script>
+async function signOutUser() {
+    await fetch('/api/auth/signout', { method: 'POST' });
+    window.location.reload(); 
+}
+
+async function getProviders() {
+    const response = await fetch('/api/auth/providers');
+    const providers = await response.json();
+    
+    const container = document.getElementById('auth-buttons-container');
+    if (container && providers) {
+        container.innerHTML = ''; 
+        for (const providerId in providers) {
+            const provider = providers[providerId];
+            const button = document.createElement('a');
+            
+            // 使用 Bootstrap 样式以匹配 Hugoplate 风格
+            button.className = 'btn btn-outline-primary btn-sm mx-1'; 
+            
+            button.href = provider.signinUrl; 
+            button.textContent = `LOGIN ${provider.name}`;
+            container.appendChild(button);
+        }
+    }
+}
+
+async function checkSession() {
+    const response = await fetch('/api/auth/session');
+    const session = await response.json();
+    
+    const container = document.getElementById('auth-buttons-container');
+    const statusText = document.getElementById('auth-status-text');
+
+    if (session && session.user) {
+        // 已登录状态
+        statusText.textContent = `Welcome, ${session.user.name || session.user.email}!`;
+        container.innerHTML = `
+            <a href="#" onclick="signOutUser()" class="btn btn-danger btn-sm mx-1">LOGOUT</a>
+        `;
+    } else {
+        // 未登录状态
+        statusText.textContent = ``; 
+        getProviders(); // 渲染登录按钮
+    }
+}
+
+document.addEventListener('DOMContentLoaded', checkSession);
+</script>
+
+<span id="auth-status-text" class="text-muted mr-2"></span>
+<div id="auth-buttons-container" class="d-flex align-items-center"></div>
