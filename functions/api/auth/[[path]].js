@@ -8,7 +8,7 @@ import { Auth } from "@auth/core";
 // import { D1Adapter } from "@auth/d1-adapter";
 
 // 导入身份提供者
-import Google from "@auth/core/providers/google"; 
+// import Google from "@auth/core/providers/google"; 
 // import Discord from "@auth/core/providers/discord";
 // import LinkedIn from "@auth/core/providers/linkedin"; 
 // import Reddit from "@auth/core/providers/reddit";
@@ -37,7 +37,7 @@ const authOptions = (env) => ({
   
   // 3. 配置 Providers
   providers: [
-    Google({ clientId: env.GOOGLE_ID, clientSecret: env.GOOGLE_SECRET }),
+    // Google({ clientId: env.GOOGLE_ID, clientSecret: env.GOOGLE_SECRET }),
     // Discord({ clientId: env.DISCORD_ID, clientSecret: env.DISCORD_SECRET }),
     // LinkedIn({ clientId: env.LINKEDIN_ID, clientSecret: env.LINKEDIN_SECRET }),
     // Reddit({ clientId: env.REDDIT_ID, clientSecret: env.REDDIT_SECRET }),
