@@ -80,7 +80,8 @@ export async function onRequest(context) {
   // 2. 路径重写：Auth.js 核心期望的请求路径不包含 Pages Function 的文件路由前缀。
   // 我们将 /auth 路由段移除，以匹配 Auth.js 内部的路由期望。
   const url = new URL(context.request.url);
-  url.pathname = url.pathname.replace('/auth', ''); 
+  // url.pathname = url.pathname.replace('/auth', ''); 
+  url.pathname = url.pathname.replace('/api/auth', '');
 
   // 3. 创建一个新的请求对象，保留原有信息但使用新的 URL 路径
   const requestWithNewUrl = new Request(url, context.request);
