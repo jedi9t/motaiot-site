@@ -32,8 +32,8 @@ url = "/contact"
 
 [[main]]
 parent = "Pages"
-name = "Authors"
-url = "/authors"
+name = "Author"
+url = "/author"
 
 [[main]]
 parent = "Pages"
