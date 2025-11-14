@@ -81,12 +81,12 @@ export async function onRequest(context) {
         });
 
         if (!userResponse.ok) {
-            const errorText = await userinfoResponse.text();
+            const errorText = await userResponse.text();
             console.error('User info fetch failed:', errorText);
             return new Response(`User info fetch failed: ${errorText}`, { status: 400 });
         }
         
-        const profile = await userinfoResponse.json();
+        const profile = await userResponse.json();
         const userEmail = profile.email;
         const userName = profile.name || userEmail;
         
