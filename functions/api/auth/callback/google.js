@@ -96,8 +96,8 @@ export async function onRequest(context) {
 
         // --- 4. D1 用户持久化 (Upsert) ---
         let userId;
-        const providerAccountId = googleUser.sub; 
-        const newUserUUID = crypto.randomUUID(); 
+        const providerAccountId = profile.sub;
+        const newUserUUID = crypto.randomUUID();
 
         // 查找或创建用户 (users 表)
         let { results: userCheck } = await db.prepare(`SELECT id FROM users WHERE email = ?1`).bind(userEmail).all();
