@@ -116,14 +116,33 @@ export async function onRequest(context) {
             sessionExpires
         ).run();
         
-        // --- 6. 设置 Session Cookie 并重定向 ---
-        const response = Response.redirect('https://motaiot.com/', 302);
+        // --- 6. 统一设置 Cookies 和 Headers ---
         
-        const cookie = `__session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Expires=${new Date(sessionExpires).toUTCString()}`;
-        response.headers.set('Set-Cookie', cookie);
+        // 1. 设置 Session Cookie 参数
+        const maxAgeSeconds = 30 * 24 * 60 * 60; 
+        const sessionExpires = Date.now() + (maxAgeSeconds * 1000); 
+        const sessionCookie = `${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Expires=${new Date(sessionExpires).toUTCString()}`;
         
-        console.log(`Login successful for user ${userId}. Session token set.`);
-        return response;
+        // 2. 清除 State Cookie (虽然 D1 已删除，但保险起见)
+        const clearStateCookie = 'google_oauth_state=; Max-Age=0; HttpOnly; Secure; Path=/; SameSite=Lax'; 
+
+        // 3. 构建 Headers 数组
+        const headers = new Headers();
+        
+        // 关键：将两个 Set-Cookie 头都添加到 Headers 数组中
+        headers.append('Set-Cookie', `__session=${sessionCookie}`); // 设置 Session
+        headers.append('Set-Cookie', clearStateCookie);            // 清除 State
+        
+        // 设置重定向 Location
+        headers.set('Location', 'https://motaiot.com/');
+
+        console.log(`Login successful for user ${userId}. Redirecting.`);
+
+        // 7. 返回最终的 Response 对象，Headers 在构造时传入
+        return new Response(null, {
+            status: 302,
+            headers: headers
+        });
 
     } catch (e) {
         console.error('FATAL ERROR in callback/google.js:', e.message, e.stack);
