@@ -1,11 +1,21 @@
 <script>
 async function signOutUser() {
-    await fetch('/api/auth/signout', { method: 'POST' });
+    // 假设您已实现 /api/auth/signout 函数来清除会话 cookie
+    // 如果没有，直接清除 cookie 并刷新页面也可以
+    document.cookie = "__session=; Path=/; HttpOnly; Secure; Max-Age=0"; 
     window.location.reload(); 
 }
 
 async function getProviders() {
+    // 调用您的原生 Providers API
     const response = await fetch('/api/auth/providers');
+    
+    // 如果 API 失败，返回一个默认按钮
+    if (!response.ok) {
+        console.error("Failed to fetch providers, API returned non-OK status.");
+        return; 
+    }
+    
     const providers = await response.json();
     
     const container = document.getElementById('auth-buttons-container');
@@ -15,7 +25,7 @@ async function getProviders() {
             const provider = providers[providerId];
             const button = document.createElement('a');
             
-            // 使用 Bootstrap 样式以匹配 Hugoplate 风格
+            // 使用 btn-outline-primary 样式
             button.className = 'btn btn-outline-primary btn-sm mx-1'; 
             
             button.href = provider.signinUrl; 
@@ -26,21 +36,26 @@ async function getProviders() {
 }
 
 async function checkSession() {
+    // 调用您的原生 Session API
     const response = await fetch('/api/auth/session');
-    const session = await response.json();
+    
+    // 假设您的 /api/auth/session 始终返回 JSON，即使未登录
+    const session = await response.json(); 
     
     const container = document.getElementById('auth-buttons-container');
-    const statusText = document.getElementById('auth-status-text');
-
+    
     if (session && session.user) {
-        // 已登录状态
-        statusText.textContent = `Welcome, ${session.user.name || session.user.email}!`;
+        // --- 修正：已登录状态 ---
+        const userName = session.user.name || session.user.email.split('@')[0];
+        
         container.innerHTML = `
+            <span class="text-text-dark dark:text-white font-semibold mr-3 whitespace-nowrap">
+                Welcome, ${userName}
+            </span>
             <a href="#" onclick="signOutUser()" class="btn btn-danger btn-sm mx-1">LOGOUT</a>
         `;
     } else {
         // 未登录状态
-        statusText.textContent = ``; 
         getProviders(); // 渲染登录按钮
     }
 }
@@ -48,5 +63,4 @@ async function checkSession() {
 document.addEventListener('DOMContentLoaded', checkSession);
 </script>
 
-<span id="auth-status-text" class="text-muted mr-2"></span>
-<div id="auth-buttons-container" class="d-flex align-items-center"></div>
+<div id="auth-buttons-container" class="flex items-center"></div>
