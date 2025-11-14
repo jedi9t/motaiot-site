@@ -64,5 +64,5 @@ weight = 3
 
 [[footer]]
 name = "Term of Service"
-url = "/termofservice"
+url = "/term-of-service"
 weight = 4
