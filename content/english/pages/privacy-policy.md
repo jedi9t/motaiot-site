@@ -1,33 +1,57 @@
 ---
-title: "Privacy"
-# meta title
-meta_title: ""
-# meta description
-description: "This is meta description"
-# save as draft
+title: "Privacy Policy"
+date: 2025-11-15T00:00:00+09:00
 draft: false
+layout: "single" 
 ---
 
-#### Responsibility of Contributors
+# Privacy Policy for motaiot.com
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Purus, donec nunc eros, ullamcorper id feugiat quisque aliquam sagittis. Sem turpis sed viverra massa gravida pharetra. Non dui dolor potenti eu dignissim fusce. Ultrices amet, in curabitur a arcu a lectus morbi id. Iaculis erat sagittis in tortor cursus. Molestie urna eu tortor, erat scelerisque eget. Nunc hendrerit sed interdum lacus. Lorem quis viverra sed
+**Effective Date:** November 15, 2025
 
-pretium, aliquam sit. Praesent elementum magna amet, tincidunt eros, nibh in leo. Malesuada purus, lacus, at aliquam suspendisse tempus. Quis tempus amet, velit nascetur sollicitudin. At sollicitudin eget amet in. Eu velit nascetur sollicitudin erhdfvssfvrgss eget viverra nec elementum. Lacus, facilisis tristique lectus in.
+This Privacy Policy describes how MOTA TECHLINK ("the Site," "we," "us," or "our") collects, uses, and discloses your personal information when you use our website, motaiot.com.
 
-#### Gathering of Personal Information
+## 1. Information We Collect
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Purus, donec nunc eros, ullamcorper id feugiat quisque aliquam sagittis. Sem turpis sed viverra massa gravida pharetra. Non dui dolor potenti eu dignissim fusce. Ultrices amet, in curabitur a arcu a lectus morbi id. Iaculis erat sagittis in tortor cursus. Molestie urna eu tortor, erat scelerisque eget. Nunc hendrerit sed interdum lacus. Lorem quis viverra sed
+We primarily collect information you provide directly to us when you use our services, specifically through our OAuth (Sign-in) integration.
 
-#### Protection of Personal- Information
+**Information Collected via Google/Third-Party Login (OAuth):**
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Purus, donec nunc eros, ullamcorper id feugiat quisque aliquam sagittis. Sem turpis sed viverra massa gravida pharetra. Non dui dolor potenti eu dignissim fusce. Ultrices amet, in curabitur a arcu a lectus morbi id. Iaculis erat sagittis in tortor cursus.
+When you choose to sign in using Google or other third-party providers, we collect only the minimum required information to identify your account and provide service continuity, which includes:
 
-Molestie urna eu tortor, erat scelerisque eget. Nunc hendrerit sed interdum lacus. Lorem quis viverra sed
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Purus, donec nunc eros, ullamcorper id feugiat
+* **Identifier:** The unique user ID provided by the third-party service (e.g., Google `sub` ID).
+* **Name:** Your display name, as provided by the third-party profile.
+* **Email Address:** Your primary email address, used for login and identification purposes.
 
-#### Privacy Policy Changes
+## 2. How We Use Your Information
 
-1. Sll the Themefisher items are designed to be with the latest , We check all
-2. comments that threaten or harm the reputation of any person or organization
-3. personal information including, but limited to, email addresses, telephone numbers
-4. Any Update come in The technology Customer will get automatic Notification.
+We use the collected information for the following purposes:
+
+* **Service Authentication:** To verify your identity and allow you to log in to our services.
+* **Session Management:** To keep you logged in and maintain your session across different pages.
+* **Conversation History:** To link your unique user ID with your past AI chat conversations (data stored locally in our database).
+* **Account Maintenance:** To manage your account and prevent fraudulent activity.
+
+We do not use your email address for marketing purposes unless you explicitly opt-in.
+
+## 3. Data Storage and Security
+
+* **Data Location:** Your authentication records, user ID, and chat history are stored on our database (Cloudflare D1), which is located on Cloudflare’s global network infrastructure.
+* **Security:** We implement security measures, including HTTPS encryption and secure JWT session management, to protect your data. All third-party login credentials (passwords, tokens) are handled exclusively by the third-party provider (e.g., Google) and are **never** stored on our servers.
+
+## 4. Data Sharing and Disclosure
+
+We do not sell, rent, or trade your personal information. We may share your information only in the following limited circumstances:
+
+* **Legal Requirements:** To comply with applicable laws, regulations, or legal processes.
+* **Service Providers:** We use third-party services (like Cloudflare) to host our data and infrastructure. These providers are bound by strict confidentiality obligations.
+
+## 5. Your Rights
+
+You have the right to request access to or deletion of your personal data we have stored. To exercise these rights, please contact us directly at the email address provided below.
+
+## 6. Contact Us
+
+If you have any questions about this Privacy Policy, please contact us at:
+
+**Email:** contact@motaiot.com
