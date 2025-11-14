@@ -1,38 +1,26 @@
-// /functions/api/auth/login/google.js
+// /functions/api/auth/login/google.js (使用 KV 存储 State)
 
 export async function onRequest(context) {
     const { env } = context;
-    const db = env.hugo_auth_db; 
+    // D1 不再用于临时 State 存储
+    // const db = env.hugo_auth_db; 
 
-    // 1. D1 数据准备
+    // 1. State 数据准备
     const state = crypto.randomUUID(); 
-    const sessionId = state; // 使用 state 作为 ID
-    const userId = 'GUEST_STATE'; // 标记为临时会话
-    const maxAgeSeconds = 300; // 5 分钟有效期
-    const expires = Date.now() + (maxAgeSeconds * 1000); 
+    const STATE_TTL_SECONDS = 300; // 5分钟有效期
 
     try {
-        // 2. 尝试将 State 写入 D1，并强制检查结果
-        // SQL 语句修正：使用实际的四列 (id, userId, sessionToken, expires)
-        const result = await db.prepare(
-            `INSERT INTO sessions (id, userId, sessionToken, expires) VALUES (?1, ?2, ?3, ?4)`
-        ).bind(
-            sessionId, 
-            userId, 
-            sessionId, 
-            expires
-        ).run();
+        // 2. 关键：将 State 写入 KV，使用 TTL
+        // 变量名 OAUTH_STATE_KV 必须与 Pages 绑定名称一致
+        await env.OAUTH_STATE_KV.put(
+            state,  // Key: State UUID
+            'valid', // Value: 任意值，表示有效
+            { expirationTtl: STATE_TTL_SECONDS } // TTL 自动处理过期
+        );
         
-        // 3. 关键检查：如果 D1 返回失败，则抛出异常
-        if (result.success === false) {
-            // 抛出异常，让 catch 块捕获 D1 错误详情
-            throw new Error(`D1 INSERT FAILED: ${result.error || 'Unknown SQL error.'}`);
-        }
+        console.log('KV State written successfully. State ID:', state); 
         
-        // 调试日志：如果写入成功，打印 State ID
-        console.log('D1 State written successfully. State ID:', sessionId); 
-        
-        // 4. 构造 Google OAuth 授权 URL
+        // 3. 构造 Google OAuth 授权 URL
         const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
         authUrl.searchParams.set('client_id', env.GOOGLE_ID);
         authUrl.searchParams.set('redirect_uri', 'https://motaiot.com/api/auth/callback/google');
@@ -40,14 +28,11 @@ export async function onRequest(context) {
         authUrl.searchParams.set('scope', 'openid email profile');
         authUrl.searchParams.set('state', state);
 
-        // 5. 重定向用户
+        // 4. 重定向用户
         return Response.redirect(authUrl.toString(), 302);
 
     } catch (e) {
-        // 捕获所有错误 (包括 D1 错误和 JS 错误)
         console.error('FATAL ERROR in login.js:', e.message);
-        
-        // 返回 500 错误，并显示详细信息（仅用于调试）
-        return new Response(`Login Failed: D1 Error. Details: ${e.message}`, { status: 500 });
+        return new Response(`Login Failed: Error. Details: ${e.message}`, { status: 500 });
     }
 }

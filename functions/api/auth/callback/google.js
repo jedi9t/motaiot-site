@@ -1,8 +1,9 @@
-// /functions/api/auth/callback/google.js
+// /functions/api/auth/callback/google.js (使用 KV 验证 State)
 
 export async function onRequest(context) {
     const { request, env } = context;
-    const db = env.hugo_auth_db;
+    // D1 仍用于永久用户和会话存储
+    const db = env.hugo_auth_db; 
 
     const url = new URL(request.url);
     const code = url.searchParams.get('code');
@@ -13,31 +14,19 @@ export async function onRequest(context) {
     }
 
     try {
-        // --- 1. State 验证和删除 (防止 CSRF 和重放攻击) ---
-        // 查询 State 记录
-        const { results: stateResults } = await db.prepare(
-            // 确保查询的 ID 和临时用户标记 'GUEST_STATE' 匹配
-            `SELECT id, expires FROM sessions WHERE id = ?1 AND userId = 'GUEST_STATE'`
-        ).bind(state).all();
+        // --- 1. State 验证和删除 (使用 KV) ---
+        const stateValue = await env.OAUTH_STATE_KV.get(state);
 
-        if (stateResults.length === 0) {
-            console.error(`State validation failed: State ID ${state} not found.`);
+        if (!stateValue) {
+            // 如果 stateValue 为 null，说明 State 不存在或已过期（TTL 处理）
+            console.error(`State validation failed: State ID ${state} not found or expired.`);
             return new Response('State not found or expired.', { status: 401 });
         }
         
-        const stateRecord = stateResults[0];
-        const currentTime = Date.now(); 
+        // 验证成功后，立即删除 KV 记录（防止重放攻击）
+        await env.OAUTH_STATE_KV.delete(state);
 
-        // 检查过期时间 (expires 是 INTEGER 毫秒时间戳)
-        if (stateRecord.expires < currentTime) {
-            console.error(`State validation failed: State ID ${state} expired.`);
-            return new Response('State expired.', { status: 401 });
-        }
-
-        // 立即删除临时 State 记录
-        await db.prepare(`DELETE FROM sessions WHERE id = ?1 AND userId = 'GUEST_STATE'`).bind(state).run();
-
-        // --- 2. Code 换取 Tokens ---
+        // --- 2. Code 换取 Tokens (保持不变) ---
         const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -45,7 +34,6 @@ export async function onRequest(context) {
                 code: code,
                 client_id: env.GOOGLE_ID,
                 client_secret: env.GOOGLE_SECRET,
-                // 确保 redirect_uri 必须与 Google 控制台设置的完全匹配
                 redirect_uri: 'https://motaiot.com/api/auth/callback/google',
                 grant_type: 'authorization_code',
             }).toString(),
@@ -60,7 +48,7 @@ export async function onRequest(context) {
         const tokens = await tokenResponse.json();
         const accessToken = tokens.access_token;
 
-        // --- 3. Fetch User Info ---
+        // --- 3. Fetch User Info (保持不变) ---
         const userinfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
             headers: { 'Authorization': `Bearer ${accessToken}` },
         });
@@ -73,19 +61,19 @@ export async function onRequest(context) {
         
         const googleUser = await userinfoResponse.json();
 
-        // --- 4. 用户和账户管理 (手动适配 Auth.js 模型) ---
+        // --- 4. 用户和账户管理 (使用 D1, 保持不变) ---
         let userId;
-        const providerAccountId = googleUser.sub; // Google 的唯一用户 ID
+        const providerAccountId = googleUser.sub;
         const userEmail = googleUser.email;
         const newUserUUID = crypto.randomUUID(); 
 
-        // a. 查找或创建用户 (users 表)
+        // 查找或创建用户
         const { results: userCheck } = await db.prepare(`SELECT id, emailVerified FROM users WHERE email = ?1`).bind(userEmail).all();
         
         if (userCheck.length > 0) {
             userId = userCheck[0].id;
         } else {
-            // 创建新用户
+            // 创建新用户 (emailVerified 使用 INTEGER 毫秒时间戳)
             userId = newUserUUID; 
             await db.prepare(
                 `INSERT INTO users (id, name, email, emailVerified) VALUES (?1, ?2, ?3, ?4)`
@@ -93,13 +81,13 @@ export async function onRequest(context) {
             console.log('New user created:', userId);
         }
 
-        // b. 查找或创建账户链接 (accounts 表)
+        // 查找或创建账户链接
         const { results: accountCheck } = await db.prepare(`
             SELECT userId FROM accounts WHERE provider = 'google' AND providerAccountId = ?1
         `).bind(providerAccountId).all();
         
         if (accountCheck.length === 0) {
-            // 创建新的账户链接
+            // 创建新的账户链接 (expires_at 使用 INTEGER 毫秒时间戳)
             await db.prepare(`
                 INSERT INTO accounts (id, userId, type, provider, providerAccountId, access_token, expires_at, id_token) 
                 VALUES (?1, ?2, 'oauth', 'google', ?3, ?4, ?5, ?6)
@@ -114,15 +102,15 @@ export async function onRequest(context) {
             console.log('New account link created for user:', userId);
         }
 
-        // --- 5. 创建最终会话 (sessions 表) ---
+        // --- 5. 创建最终会话 (使用 D1 sessions 表) ---
         const sessionToken = crypto.randomUUID();
-        // 设置 30 天过期时间 (INTEGER 毫秒时间戳)
         const sessionExpires = Date.now() + (30 * 24 * 60 * 60 * 1000); 
 
+        // 确保 sessions 表中没有 FOREIGN KEY 约束，因为 userId 必须存在于 users 表中
         await db.prepare(
             `INSERT INTO sessions (id, userId, sessionToken, expires) VALUES (?1, ?2, ?3, ?4)`
         ).bind(
-            sessionToken, // 使用 sessionToken 作为 primary key ID
+            sessionToken, 
             userId, 
             sessionToken, 
             sessionExpires
@@ -131,7 +119,6 @@ export async function onRequest(context) {
         // --- 6. 设置 Session Cookie 并重定向 ---
         const response = Response.redirect('https://motaiot.com/', 302);
         
-        // 设置 HTTPOnly 和 Secure 的会话 Cookie
         const cookie = `__session=${sessionToken}; Path=/; HttpOnly; Secure; SameSite=Lax; Expires=${new Date(sessionExpires).toUTCString()}`;
         response.headers.set('Set-Cookie', cookie);
         
@@ -139,7 +126,6 @@ export async function onRequest(context) {
         return response;
 
     } catch (e) {
-        // 捕获所有错误
         console.error('FATAL ERROR in callback/google.js:', e.message, e.stack);
         return new Response(`Authentication Error: ${e.message}. Check Worker logs for details.`, { status: 500 });
     }
