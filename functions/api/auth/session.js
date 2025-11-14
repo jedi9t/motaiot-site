@@ -49,43 +49,41 @@ async function getD1User(db, userId) {
 
 export async function onRequest(context) {
     const { request, env } = context;
-    const cookieHeader = request.headers.get('Cookie');
+    const db = env.hugo_auth_db;
 
-    // 1. 检查会话 Cookie (格式: app_session_id=sessionId|userId)
-    const sessionMatch = cookieHeader?.match(/app_session_id=([^;]+)/);
+    // 1. 检查 Cookie 头
+    const cookieHeader = request.headers.get('Cookie');
+    const sessionMatch = cookieHeader?.match(/__session=([^;]+)/); 
 
     if (sessionMatch) {
         try {
-            // 解析 Session ID 和 User ID
-            const [sessionId, userId] = sessionMatch[1].split('|');
-            
-            // 2. 检查 D1 数据库以确认会话有效且未过期
-            const isSessionValid = await getD1Session(env.hugo_auth_db, sessionId, userId);
+            // 2. 解析 Session ID 和 User ID (格式: sessionId|userId)
+            const [sessionId, userId] = sessionMatch[1].split('|'); 
 
-            if (isSessionValid) {
-                // 3. 从 D1 获取完整的用户数据
-                const user = await getD1User(env.hugo_auth_db, userId);
+            // 3. 在 D1 中验证 Session 是否有效且未过期
+            const { results: sessionCheck } = await db.prepare(
+                `SELECT expires FROM sessions WHERE id = ?1 AND userId = ?2`
+            ).bind(sessionId, userId).all();
 
-                if (user) {
-                    // 4. 返回用户信息给前端
-                    return new Response(JSON.stringify({ user }), {
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            // 刷新 Cookie 过期时间，保持会话活跃 (可选)
-                            'Set-Cookie': `app_session_id=${sessionId}|${userId}; HttpOnly; Secure; Max-Age=2592000; Path=/` 
-                        }
+            if (sessionCheck.length > 0 && sessionCheck[0].expires > Date.now()) {
+                // 4. 获取用户数据 (假设此用户存在)
+                const { results: userResult } = await db.prepare(
+                    `SELECT id, name, email FROM users WHERE id = ?1`
+                ).bind(userId).all();
+
+                if (userResult.length > 0) {
+                    // 5. 返回用户信息 (200 OK)
+                    return new Response(JSON.stringify({ user: userResult[0] }), {
+                        headers: { 'Content-Type': 'application/json' }
                     });
                 }
             }
-            
-            // 如果会话无效、过期或用户不存在，则继续执行到未登录部分
         } catch (e) {
-            // 捕获任何解析错误或 D1 错误，打印日志并视为未登录
-            console.error("Session check error (D1/Cookie parsing):", e);
+            console.error("Session API Error:", e.message);
         }
     }
 
-    // 未登录
+    // 6. 未登录或会话无效
     return new Response(JSON.stringify({ user: null }), {
         headers: { 'Content-Type': 'application/json' }
     });
