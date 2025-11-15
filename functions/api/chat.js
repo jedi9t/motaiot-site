@@ -63,7 +63,7 @@ export async function onRequest(context) {
         const { message } = await request.json();
 
         // 2. 关键：调用 AutoRAG 集成服务 (使用 stream: true)
-        const aiResponse = await env.AI.autorag(RAG_INDEX_NAME).aiSearch({
+        const aiResponseStream = = await env.AI.autorag(RAG_INDEX_NAME).aiSearch({
             query: message,         
             rewrite_query: true,   
             stream: true,           // 启用流式输出
@@ -75,7 +75,7 @@ export async function onRequest(context) {
         // ⚠️ 修正：由于 Workers AI 的 API 设计，流对象通常不能被提前读取。
         // 我们需要创建 Tee 副本：一个用于历史记录，一个用于返回给前端。
         
-        const [historyStream, clientStream] = aiResponse.tee(); 
+        const [historyStream, clientStream] = aiResponseStream.tee(); 
         
         // 4. 异步存储历史记录 (不阻塞主请求)
         context.waitUntil((async () => {
