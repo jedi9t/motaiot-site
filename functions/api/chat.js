@@ -118,7 +118,7 @@ export async function onRequest(context) {
         ).run();
 
         // 4. 返回 AI 响应
-        return new Response(aiResponseText), {
+        return new Response(aiResponseText , {
             headers: { 'Content-Type': 'application/json' }
         });
 
