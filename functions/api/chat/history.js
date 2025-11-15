@@ -10,7 +10,7 @@ async function getSessionUser(request, db) {
     try {
         const [sessionId, userId] = sessionMatch[1].split('|');
         // 假设您的会话表名为 sessions，用户 ID 字段为 user_id
-        const { results: sessionCheck } = await db.prepare(`SELECT expires FROM sessions WHERE id = ?1 AND user_id = ?2`).bind(sessionId, userId).all();
+        const { results: sessionCheck } = await db.prepare(`SELECT expires FROM sessions WHERE id = ?1 AND userId = ?2`).bind(sessionId, userId).all();
         if (sessionCheck.length === 0 || sessionCheck[0].expires <= Date.now()) return null;
         const { results: userResult } = await db.prepare(`SELECT id, name, email FROM users WHERE id = ?1`).bind(userId).all();
         if (userResult.length > 0) return { userId: userResult[0].id, name: userResult[0].name, email: userResult[0].email };
