@@ -64,8 +64,8 @@ export async function onRequest(context) {
 
         // 2. 关键：调用 AutoRAG 集成服务 (使用 stream: true)
         const aiResponse = await env.AI.autorag(RAG_INDEX_NAME).aiSearch({
-            query: message,
-            model: INFERENCE_MODEL, // 指定 LLM
+            query: message,         
+            rewrite_query: true,   
             stream: true,           // 启用流式输出
         });
 
