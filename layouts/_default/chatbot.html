@@ -35,9 +35,38 @@
         let isAuthenticated = false; // 全局认证状态
 
         function appendMessage(sender, text) {
-            const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
+            {{/*  const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
             const name = sender === 'user' ? '您' : 'AI';
             history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg whitespace-pre-wrap"><strong>${name}:</strong> ${text}</div>`;
+            history.scrollTop = history.scrollHeight;  */}}
+            const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
+            const name = sender === 'user' ? '您' : 'AI';
+            
+            let messageContent;
+
+            if (sender === 'user') {
+                // 用户消息：不需要 Markdown 渲染
+                messageContent = text;
+            } else {
+                // AI 消息：使用 marked.parse() 渲染 Markdown
+                if (typeof marked !== 'undefined') {
+                    // 确保使用 innerHTML 接收 marked 渲染的 HTML 结构
+                    messageContent = marked.parse(text); 
+                } else {
+                    // 备份：如果 marked 加载失败，保留纯文本
+                    messageContent = text;
+                }
+            }
+
+            // 关键：对 AI 消息使用 innerHTML 插入渲染后的 HTML
+            // 对用户消息使用 textContent/纯文本，以保持结构一致性
+            
+            history.innerHTML += `
+                <div class="${className} p-2 bg-gray-700/50 rounded-lg">
+                    <strong>${name}:</strong> 
+                    <span class="message-body">${messageContent}</span>
+                </div>
+            `;
             history.scrollTop = history.scrollHeight;
         }
 
