@@ -75,35 +75,35 @@ export async function onRequest(context) {
         // ⚠️ 修正：由于 Workers AI 的 API 设计，流对象通常不能被提前读取。
         // 我们需要创建 Tee 副本：一个用于历史记录，一个用于返回给前端。
         
-        const [historyStream, clientStream] = aiResponseStream.tee(); 
+        // const [historyStream, clientStream] = aiResponseStream.tee(); 
         
-        // 4. 异步存储历史记录 (不阻塞主请求)
-        context.waitUntil((async () => {
-            let historyText = '';
-            const reader = historyStream.getReader();
-            const decoder = new TextDecoder();
+        // // 4. 异步存储历史记录 (不阻塞主请求)
+        // context.waitUntil((async () => {
+        //     let historyText = '';
+        //     const reader = historyStream.getReader();
+        //     const decoder = new TextDecoder();
             
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                historyText += decoder.decode(value, { stream: true });
-            }
+        //     while (true) {
+        //         const { done, value } = await reader.read();
+        //         if (done) break;
+        //         historyText += decoder.decode(value, { stream: true });
+        //     }
             
-            // 存储对话历史 (ChatHistory 表)
-            await db.prepare(
-                `INSERT INTO ChatHistory (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
-            ).bind(
-                crypto.randomUUID(), 
-                user.userId, 
-                message, 
-                historyText, 
-                Date.now()
-            ).run();
-        })());
+        //     // 存储对话历史 (ChatHistory 表)
+        //     await db.prepare(
+        //         `INSERT INTO ChatHistory (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
+        //     ).bind(
+        //         crypto.randomUUID(), 
+        //         user.userId, 
+        //         message, 
+        //         historyText, 
+        //         Date.now()
+        //     ).run();
+        // })());
 
 
         // 5. 将流返回给前端
-        return new Response(clientStream, {
+        return new Response(aiResponseStream, {
             headers: { 'Content-Type': 'text/plain; charset=utf-8' } // 纯文本流
         });
 
