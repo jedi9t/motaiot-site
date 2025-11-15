@@ -2,6 +2,6 @@
   "version": 1,
   "include": [
     "/api/auth/*",  
-    "/api/chat"     
+    "/api/chat/*"     
   ]
 }

@@ -85,6 +85,41 @@
             `;
             history.scrollTop = history.scrollHeight;
         }
+
+        // ----------------------------------------------------
+        // 新增函数：加载历史记录
+        // ----------------------------------------------------
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/chat/history');
+                if (response.status === 401) return; // 仅在登录后尝试加载，未登录不报错
+
+                if (response.ok) {
+                    const historyData = await response.json();
+                    
+                    // 1. 清除初始的欢迎消息
+                    history.innerHTML = ''; 
+
+                    // 2. 渲染历史消息
+                    historyData.forEach(item => {
+                        // 渲染用户消息
+                        if (item.userMessage) {
+                            appendMessage('user', item.userMessage);
+                        }
+                        // 渲染 AI 响应
+                        if (item.aiResponse) {
+                            // 调用 appendMessage，它会负责 Markdown 渲染
+                            appendMessage('ai', item.aiResponse); 
+                        }
+                    });
+                    history.scrollTop = history.scrollHeight;
+                } else {
+                    console.error("Failed to load history:", await response.text());
+                }
+            } catch (e) {
+                console.error("Load History Error:", e);
+            }
+        }
         async function initializeChat() {
             try {
                 // 1. 检查 Session
@@ -97,6 +132,8 @@
                     input.disabled = false;
                     sendBtn.disabled = false;
                     input.focus();
+                    // ✅ 关键：登录成功后，加载历史记录
+                    await loadHistory();
                 } else {
                     statusElement.innerHTML = `<strong>请注意:</strong> 您需要<a href="/" class="text-blue-400 underline">返回主页登录</a>才能使用 AI 客服。`;
                     input.disabled = true;
@@ -119,7 +156,7 @@
             statusElement.textContent = 'AI is thinking...';
 
             try {
-                const response = await fetch('/api/chat', {
+                const response = await fetch('/api/chat/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message }),
@@ -140,6 +177,13 @@
             } catch (error) {
                 console.error("Chat Error:", error);
                 appendMessage('ai', `[系统错误]: 无法处理请求。请重新登录。 (${error.message})`);
+                // 仅显示一条错误消息
+                const tempDiv = document.createElement('div');
+                tempDiv.textContent = `[系统错误]: ${error.message}`;
+                const errorMessageHTML = tempDiv.innerHTML;
+
+                history.innerHTML += `<div class="text-left text-red-500 p-2 bg-red-700/50 rounded-lg"><strong>AI:</strong> <div class="message-body">${errorMessageHTML}</div></div>`;
+                history.scrollTop = history.scrollHeight;
                 statusElement.textContent = `连接失败: 请检查日志。`;
             } finally {
                 sendBtn.disabled = false;
