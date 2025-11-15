@@ -23,6 +23,7 @@
         </div>
     </div>
 </section>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -34,42 +35,56 @@
         
         let isAuthenticated = false; // 全局认证状态
 
-        function appendMessage(sender, text) {
-            {{/*  const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
+        {{/*  function appendMessage(sender, text) {
+            const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
             const name = sender === 'user' ? '您' : 'AI';
             history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg whitespace-pre-wrap"><strong>${name}:</strong> ${text}</div>`;
-            history.scrollTop = history.scrollHeight;  */}}
+            history.scrollTop = history.scrollHeight;              
+        }  */}}
+        
+
+        // ----------------------------------------------------
+        // 修正后的辅助函数：添加消息到 UI
+        // ----------------------------------------------------
+        /**
+        * 添加消息到 UI，并根据发送者类型进行 Markdown 渲染。
+        * * 注意：由于后端是阻塞式返回完整文本，前端只需要调用一次 appendMessage(sender, text)。
+        */
+        function appendMessage(sender, text) {
             const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
             const name = sender === 'user' ? '您' : 'AI';
             
-            let messageContent;
+            let messageContentHTML;
 
             if (sender === 'user') {
-                // 用户消息：不需要 Markdown 渲染
-                messageContent = text;
+                // 1. 用户消息：不需要 Markdown 渲染，直接显示纯文本（textContent的安全做法）
+                //    为了避免 XSS 风险，最好对纯文本进行转义（这里使用 DOM API 简化）
+                const tempDiv = document.createElement('div');
+                tempDiv.textContent = text;
+                messageContentHTML = tempDiv.innerHTML; // 自动转义，保证安全
             } else {
-                // AI 消息：使用 marked.parse() 渲染 Markdown
+                // 2. AI 消息：使用 marked.parse() 渲染 Markdown
                 if (typeof marked !== 'undefined') {
-                    // 确保使用 innerHTML 接收 marked 渲染的 HTML 结构
-                    messageContent = marked.parse(text); 
+                    // ✅ 关键：使用 marked.parse() 将 Markdown 转换为 HTML
+                    messageContentHTML = marked.parse(text); 
                 } else {
-                    // 备份：如果 marked 加载失败，保留纯文本
-                    messageContent = text;
+                    // 备份：如果 marked 加载失败，显示原始文本（并转义）
+                    const tempDiv = document.createElement('div');
+                    tempDiv.textContent = text;
+                    messageContentHTML = tempDiv.innerHTML;
                 }
             }
 
-            // 关键：对 AI 消息使用 innerHTML 插入渲染后的 HTML
-            // 对用户消息使用 textContent/纯文本，以保持结构一致性
-            
+            // 关键：对整个消息体使用 innerHTML 注入渲染后的内容
+            // 这将允许 Markdown 转换成的 HTML（例如 <h1>, <strong>, <ul>）生效
             history.innerHTML += `
                 <div class="${className} p-2 bg-gray-700/50 rounded-lg">
                     <strong>${name}:</strong> 
-                    <span class="message-body">${messageContent}</span>
+                    <div class="message-body">${messageContentHTML}</div>
                 </div>
             `;
             history.scrollTop = history.scrollHeight;
         }
-
         async function initializeChat() {
             try {
                 // 1. 检查 Session
