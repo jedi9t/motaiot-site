@@ -63,7 +63,7 @@ export async function onRequest(context) {
         const { message } = await request.json();
 
         // 2. 关键：调用 AutoRAG 集成服务 (使用 stream: true)
-        const aiResponseStream = = await env.AI.autorag(RAG_INDEX_NAME).aiSearch({
+        const aiResponseStream = await env.AI.autorag(RAG_INDEX_NAME).aiSearch({
             query: message,         
             rewrite_query: true,   
             stream: true,           // 启用流式输出
