@@ -1,4 +1,3 @@
-
 {{ define "main" }}
 <section class="section pt-14">
     <div class="container lg:col-8 mx-auto">
@@ -26,9 +25,9 @@
         </div>
     </div>
 </section>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
 <script>
-    // 确保 marked.js 库已加载
+    // 确保 marked.js 库已在 baseof.html 的底部加载
     
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('chat-input');
@@ -175,3 +174,4 @@
         initializeChat();
     });
 </script>
+{{ end }}
