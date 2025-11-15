@@ -104,9 +104,9 @@ export async function onRequest(context) {
         // 2. 执行 RAG 检索和 LLM 推理
         const aiResponseText = await generateRAGResponse(env, message);
 
-        // 3. 存储对话历史 (ChatHistory 表)
+        // 3. 存储对话历史 (chat_history 表)
         await db.prepare(
-            `INSERT INTO ChatHistory (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
+            `INSERT INTO chat_history (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
         ).bind(
             crypto.randomUUID(), 
             user.userId, 
