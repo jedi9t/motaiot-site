@@ -1,23 +1,23 @@
 {{ define "main" }}
 <section class="section pt-14">
     <div class="container lg:col-8 mx-auto">
-        <h1 class="mb-6 text-h3 lg:text-h2 text-center">🤖 MOTA TECHLINK AI 客服中心</h1>
+        <h1 class="mb-6 text-h3 lg:text-h2 text-center">🤖 AI CUSTOM SUPPORT</h1>
         
         <div id="auth-status-bar" class="text-center mb-4 p-3 border-b border-gray-700">
-            <p class="text-yellow-400" id="status-message">正在检查登录状态...</p>
+            <p class="text-yellow-400" id="status-message">Checking login status...</p>
         </div>
 
         <div class="bg-gray-800 rounded-xl shadow-2xl overflow-hidden">
             <div id="chat-history" class="p-4 h-[60vh] overflow-y-scroll text-sm space-y-3">
-                <div class="text-left text-gray-400"><strong>AI:</strong> 欢迎！我是 MOTA TECHLINK 的 AI 客服，请问有什么可以帮您？</div>
+                <div class="text-left text-gray-400"><strong>AI:</strong> WELCOME, I am MOTA TECHLINK AI CS Agent, what can I do for you?</div>
             </div>
 
             <div id="chat-input-area" class="p-4 border-t border-gray-700 flex">
-                <input type="text" id="chat-input" placeholder="输入您的问题..." 
-                       class="flex-grow p-3 border rounded-l-lg bg-gray-900 text-white focus:outline-none" 
+                <input type="text" id="chat-input" placeholder="Input your quesiton..." 
+                       class="flex-grow p-3 border rounded-l-l What can I do for you g bg-gray-900 text-white focus:outline-none" 
                        disabled />
                 <button id="send-btn" class="btn btn-primary rounded-l-none" disabled>
-                    发送
+                    SUBMIT
                 </button>
             </div>
         </div>
@@ -49,7 +49,7 @@
 
                 if (session && session.user) {
                     isAuthenticated = true;
-                    statusElement.innerHTML = `已登录为: <strong>${session.user.name || session.user.email}</strong>。您可以开始对话了。`;
+                    statusElement.innerHTML = `Login as: <strong>${session.user.name || session.user.email}</strong>。you can start to chat。`;
                     input.disabled = false;
                     sendBtn.disabled = false;
                     input.focus();
@@ -63,18 +63,47 @@
                 statusElement.innerHTML = `<span class="text-red-500">系统错误: 无法连接到认证服务。</span>`;
             }
         }
+
+        function appendMessage(sender, text) {
+            // 改进 1：使用 Markdown 渲染
+            const renderedText = sender === 'ai' ? marked.parse(text) : text;
+            const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
+            const name = sender === 'user' ? '您' : 'AI';
+            
+            // 使用 data-id 属性来定位 AI 消息容器
+            const uniqueId = 'msg-' + Date.now();
+            
+            // 如果是用户消息，直接添加；如果是 AI 消息，添加一个空的容器
+            if (sender === 'user') {
+                history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg whitespace-pre-wrap"><strong>${name}:</strong> ${renderedText}</div>`;
+            } else {
+                history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg" data-id="${uniqueId}"><strong>${name}:</strong> <span class="ai-text"></span></div>`;
+            }
+            
+            history.scrollTop = history.scrollHeight;
+            return uniqueId;
+        }
         
         async function sendMessage() {
             const message = input.value.trim();
             if (!message || !isAuthenticated) return;
 
-            appendMessage('user', message);
+            // --- 改进 2：显示思考提示，禁用输入 ---
+            const thinkingId = appendMessage('user', message); // 添加用户消息
+            
             input.value = '';
             sendBtn.disabled = true;
             input.disabled = true;
-            statusElement.textContent = 'AI 正在思考...';
+            statusElement.textContent = 'AI 正在思考 (Streaming)...';
+            
+            // 添加一个临时的 AI 消息容器，用于接收流数据
+            const aiMessageId = appendMessage('ai', ''); 
+            const aiTextElement = history.querySelector(`[data-id="${aiMessageId}"] .ai-text`);
+            
+            let fullResponseText = '';
 
             try {
+                // 改进 3：使用 fetch API 处理 ReadableStream
                 const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -84,19 +113,39 @@
                 if (response.status === 401) {
                     throw new Error("会话无效，请重新登录。");
                 }
+                if (!response.ok) {
+                    throw new Error("API 处理失败或返回错误状态。");
+                }
                 
-                const data = await response.json();
-                
-                if (response.status !== 200) {
-                    throw new Error(data.message || data.reply || "API 处理失败。");
+                // 确保响应是流式的
+                if (!response.body) {
+                    throw new Error("服务器未返回流数据。");
                 }
 
-                appendMessage('ai', data.reply);
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                
+                // 逐步读取流数据
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
+                    const chunk = decoder.decode(value, { stream: true });
+                    fullResponseText += chunk;
+                    
+                    // 实时更新 UI 并渲染 Markdown (性能要求高)
+                    // 注意：为了流畅性，我们只在最后渲染 Markdown，这里显示纯文本
+                    aiTextElement.innerHTML = fullResponseText; 
+                    
+                    history.scrollTop = history.scrollHeight;
+                }
+
+                // 改进 1 最终步骤：流接收完毕，进行最终 Markdown 渲染
+                aiTextElement.innerHTML = marked.parse(fullResponseText); 
+                
             } catch (error) {
                 console.error("Chat Error:", error);
-                appendMessage('ai', `[系统错误]: 无法处理请求。请重新登录。 (${error.message})`);
-                statusElement.textContent = `连接失败: 请检查日志。`;
+                aiTextElement.innerHTML = `[系统错误]: 无法处理请求。(${error.message})`;
             } finally {
                 sendBtn.disabled = false;
                 input.disabled = false;
