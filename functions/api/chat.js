@@ -20,7 +20,7 @@ async function getSessionUser(request, db) {
 
         // 1. 验证 sessions 表中的会话记录
         const { results: sessionCheck } = await db.prepare(
-            `SELECT expires FROM sessions WHERE id = ?1 AND user_id = ?2`
+            `SELECT expires FROM sessions WHERE id = ?1 AND userId = ?2`
         ).bind(sessionId, userId).all();
 
         if (sessionCheck.length === 0 || sessionCheck[0].expires <= Date.now()) {
