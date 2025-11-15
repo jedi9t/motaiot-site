@@ -1,0 +1,116 @@
+{{ define "main" }}
+<section class="section pt-14">
+    <div class="container lg:col-8 mx-auto">
+        <h1 class="mb-6 text-h3 lg:text-h2 text-center">🤖 MOTA TECHLINK AI 客服中心</h1>
+        
+        <div id="auth-status-bar" class="text-center mb-4 p-3 border-b border-gray-700">
+            <p class="text-yellow-400" id="status-message">正在检查登录状态...</p>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl shadow-2xl overflow-hidden">
+            <div id="chat-history" class="p-4 h-[60vh] overflow-y-scroll text-sm space-y-3">
+                <div class="text-left text-gray-400"><strong>AI:</strong> 欢迎！我是 MOTA TECHLINK 的 AI 客服，请问有什么可以帮您？</div>
+            </div>
+
+            <div id="chat-input-area" class="p-4 border-t border-gray-700 flex">
+                <input type="text" id="chat-input" placeholder="输入您的问题..." 
+                       class="flex-grow p-3 border rounded-l-lg bg-gray-900 text-white focus:outline-none" 
+                       disabled />
+                <button id="send-btn" class="btn btn-primary rounded-l-none" disabled>
+                    发送
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const history = document.getElementById('chat-history');
+        const statusElement = document.getElementById('status-message');
+        const inputArea = document.getElementById('chat-input-area');
+        
+        let isAuthenticated = false; // 全局认证状态
+
+        function appendMessage(sender, text) {
+            const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
+            const name = sender === 'user' ? '您' : 'AI';
+            history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg whitespace-pre-wrap"><strong>${name}:</strong> ${text}</div>`;
+            history.scrollTop = history.scrollHeight;
+        }
+
+        async function initializeChat() {
+            try {
+                // 1. 检查 Session
+                const sessionResponse = await fetch('/api/auth/session');
+                const session = await sessionResponse.json();
+
+                if (session && session.user) {
+                    isAuthenticated = true;
+                    statusElement.innerHTML = `已登录为: <strong>${session.user.name || session.user.email}</strong>。您可以开始对话了。`;
+                    input.disabled = false;
+                    sendBtn.disabled = false;
+                    input.focus();
+                } else {
+                    statusElement.innerHTML = `<strong>请注意:</strong> 您需要<a href="/" class="text-blue-400 underline">返回主页登录</a>才能使用 AI 客服。`;
+                    input.disabled = true;
+                    sendBtn.disabled = true;
+                }
+            } catch (e) {
+                console.error("Initialization Error:", e);
+                statusElement.innerHTML = `<span class="text-red-500">系统错误: 无法连接到认证服务。</span>`;
+            }
+        }
+        
+        async function sendMessage() {
+            const message = input.value.trim();
+            if (!message || !isAuthenticated) return;
+
+            appendMessage('user', message);
+            input.value = '';
+            sendBtn.disabled = true;
+            input.disabled = true;
+            statusElement.textContent = 'AI 正在思考...';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message }),
+                });
+
+                if (response.status === 401) {
+                    throw new Error("会话无效，请重新登录。");
+                }
+                
+                const data = await response.json();
+                
+                if (response.status !== 200) {
+                    throw new Error(data.message || data.reply || "API 处理失败。");
+                }
+
+                appendMessage('ai', data.reply);
+
+            } catch (error) {
+                console.error("Chat Error:", error);
+                appendMessage('ai', `[系统错误]: 无法处理请求。请重新登录。 (${error.message})`);
+                statusElement.textContent = `连接失败: 请检查日志。`;
+            } finally {
+                sendBtn.disabled = false;
+                input.disabled = false;
+                statusElement.textContent = isAuthenticated ? '您可以继续对话了。' : '';
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        
+        // 启动聊天初始化
+        initializeChat();
+    });
+</script>
+{{ end }}
