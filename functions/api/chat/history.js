@@ -34,10 +34,14 @@ export async function onRequest(context) {
     try {
         // 2. 查询历史记录，按时间戳升序排序
         const { results } = await db.prepare(
-            `SELECT userMessage, aiResponse, timestamp 
-             FROM chat_history 
-             WHERE userId = ?1 
-             ORDER BY timestamp ASC limit 20`
+            `SELECT * FROM (
+                SELECT userMessage, aiResponse, timestamp
+                FROM chat_history
+                WHERE userId = ?1
+                ORDER BY timestamp DESC
+                LIMIT 20
+            ) AS latest_records
+            ORDER BY timestamp ASC; `
         ).bind(user.userId).all();
         
         // 3. 返回历史记录 JSON 数组
