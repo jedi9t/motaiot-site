@@ -24,120 +24,37 @@
     </div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
 <script>
+    // 确保 marked.js 库已在 baseof.html 的底部加载
+    
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const history = document.getElementById('chat-history');
         const statusElement = document.getElementById('status-message');
-        const inputArea = document.getElementById('chat-input-area');
         
-        let isAuthenticated = false; // 全局认证状态
+        let isAuthenticated = false; 
 
-        {{/*  function appendMessage(sender, text) {
-            const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
-            const name = sender === 'user' ? '您' : 'AI';
-            history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg whitespace-pre-wrap"><strong>${name}:</strong> ${text}</div>`;
-            history.scrollTop = history.scrollHeight;              
-        }  */}}
-        
-
-        // ----------------------------------------------------
-        // 修正后的辅助函数：添加消息到 UI
-        // ----------------------------------------------------
-        /**
-        * 添加消息到 UI，并根据发送者类型进行 Markdown 渲染。
-        * * 注意：由于后端是阻塞式返回完整文本，前端只需要调用一次 appendMessage(sender, text)。
-        */
-        function appendMessage(sender, text) {
-            const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
-            const name = sender === 'user' ? '您' : 'AI';
-            
-            let messageContentHTML;
-
-            if (sender === 'user') {
-                // 1. 用户消息：不需要 Markdown 渲染，直接显示纯文本（textContent的安全做法）
-                //    为了避免 XSS 风险，最好对纯文本进行转义（这里使用 DOM API 简化）
-                const tempDiv = document.createElement('div');
-                tempDiv.textContent = text;
-                messageContentHTML = tempDiv.innerHTML; // 自动转义，保证安全
-            } else {
-                // 2. AI 消息：使用 marked.parse() 渲染 Markdown
-                if (typeof marked !== 'undefined') {
-                    // ✅ 关键：使用 marked.parse() 将 Markdown 转换为 HTML
-                    messageContentHTML = marked.parse(text); 
-                } else {
-                    // 备份：如果 marked 加载失败，显示原始文本（并转义）
-                    const tempDiv = document.createElement('div');
-                    tempDiv.textContent = text;
-                    messageContentHTML = tempDiv.innerHTML;
-                }
-            }
-
-            // 关键：对整个消息体使用 innerHTML 注入渲染后的内容
-            // 这将允许 Markdown 转换成的 HTML（例如 <h1>, <strong>, <ul>）生效
-            history.innerHTML += `
-                <div class="${className} p-2 bg-gray-700/50 rounded-lg">
-                    <strong>${name}:</strong> 
-                    <div class="message-body">${messageContentHTML}</div>
-                </div>
-            `;
-            history.scrollTop = history.scrollHeight;
-        }
-
-        // ----------------------------------------------------
-        // 新增函数：加载历史记录
-        // ----------------------------------------------------
-        async function loadHistory() {
-            try {
-                const response = await fetch('/api/chat/history');
-                if (response.status === 401) return; // 仅在登录后尝试加载，未登录不报错
-
-                if (response.ok) {
-                    const historyData = await response.json();
-                    
-                    // 1. 清除初始的欢迎消息
-                    history.innerHTML = ''; 
-
-                    // 2. 渲染历史消息
-                    historyData.forEach(item => {
-                        // 渲染用户消息
-                        if (item.userMessage) {
-                            appendMessage('user', item.userMessage);
-                        }
-                        // 渲染 AI 响应
-                        if (item.aiResponse) {
-                            // 调用 appendMessage，它会负责 Markdown 渲染
-                            appendMessage('ai', item.aiResponse); 
-                        }
-                    });
-                    history.scrollTop = history.scrollHeight;
-                } else {
-                    console.error("Failed to load history:", await response.text());
-                }
-            } catch (e) {
-                console.error("Load History Error:", e);
-            }
-        }
+        // ------------------- (辅助函数：初始化聊天状态, appendMessage 保持不变) -------------------
+        // [请确保 initializeChat 函数的完整代码放在这里]
         async function initializeChat() {
             try {
-                // 1. 检查 Session
                 const sessionResponse = await fetch('/api/auth/session');
                 const session = await sessionResponse.json();
 
                 if (session && session.user) {
                     isAuthenticated = true;
-                    statusElement.innerHTML = `Login as: <strong>${session.user.name || session.user.email}</strong>。you can start to chat。`;
+                    statusElement.innerHTML = `已登录为: <strong>${session.user.name || session.user.email}</strong>。您可以开始对话了。`;
                     input.disabled = false;
                     sendBtn.disabled = false;
                     input.focus();
-                    // ✅ 关键：登录成功后，加载历史记录
-                    await loadHistory();
+                    
+                    // 假设 loadHistory 函数已在外部定义且可用
+                    // await loadHistory(); 
                 } else {
                     statusElement.innerHTML = `<strong>请注意:</strong> 您需要<a href="/" class="text-blue-400 underline">返回主页登录</a>才能使用 AI 客服。`;
                     input.disabled = true;
-                    sendBtn.disabled = true;
+                    sendBtn.disabled = false; 
                 }
             } catch (e) {
                 console.error("Initialization Error:", e);
@@ -145,35 +62,125 @@
             }
         }
         
+        function appendMessage(sender, text) {
+            const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
+            const name = sender === 'user' ? '您' : 'AI';
+            
+            // 如果是 AI 消息，创建一个新的容器并返回其 ID
+            if (sender === 'ai') {
+                const uniqueId = 'msg-' + Date.now();
+                history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg" data-id="${uniqueId}"><strong>${name}:</strong> <span class="ai-text"></span></div>`;
+                history.scrollTop = history.scrollHeight;
+                return uniqueId;
+            } 
+            
+            // 如果是用户消息
+            const tempDiv = document.createElement('div');
+            tempDiv.textContent = text;
+            history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg whitespace-pre-wrap"><strong>${name}:</strong> ${tempDiv.innerHTML}</div>`;
+            history.scrollTop = history.scrollHeight;
+            return null;
+        }
+        
+        // ----------------------------------------------------
+        // 主发送函数 (处理 Streaming & SSE 解析)
+        // ----------------------------------------------------
         async function sendMessage() {
             const message = input.value.trim();
-            if (!message || !isAuthenticated) return;
+            if (!message || !isAuthenticated) { /* ... */ return; }
 
             appendMessage('user', message);
             input.value = '';
             sendBtn.disabled = true;
             input.disabled = true;
-            statusElement.textContent = 'AI is thinking...';
+            statusElement.textContent = 'AI 正在思考 (Streaming)...';
+            
+            const aiMessageId = appendMessage('ai', ''); 
+            const aiTextElement = history.querySelector(`[data-id="${aiMessageId}"] .ai-text`);
+            
+            let fullResponseText = '';
 
             try {
+                // 1. 发起流式请求 (注意 Accept: "text/event-stream" 必须在后端设置)
                 const response = await fetch('/api/chat/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message }),
                 });
 
-                if (response.status === 401) {
-                    throw new Error("会话无效，请重新登录。");
+                if (response.status === 401) { throw new Error("会话无效，请重新登录。"); }
+                
+                if (!response.ok) {
+                    const errorText = await response.text(); 
+                    throw new Error(`API 错误: ${response.status} - ${errorText}`);
                 }
                 
-                const data = await response.json();
-                
-                if (response.status !== 200) {
-                    throw new Error(data.message || data.reply || "API 处理失败。");
+                if (!response.body) {
+                    throw new Error("服务器未返回流数据。");
                 }
+                
+                // 2. SSE 解析和流式读取逻辑
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = ''; 
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
-                appendMessage('ai', data.reply);
+                    buffer += decoder.decode(value, { stream: true });
+                    
+                    let position = buffer.indexOf("\n\n");
+                    
+                    while (position !== -1) {
+                        const chunk = buffer.substring(0, position);
+                        const lines = chunk.split("\n");
+                        let data = "";
+                        
+                        // 提取 SSE data: 部分
+                        for (let line of lines) {
+                            if (line.startsWith("data:")) {
+                                data += line.substring(5).trimLeft(); // 移除 "data:"
+                            }
+                        }
 
+                        if (data) {
+                            if (data === '[DONE]') {
+                                break; 
+                            }
+                            
+                            try {
+                                // 解析 JSON (响应数据：{"response": "..."})
+                                const parsedData = JSON.parse(data);
+                                
+                                const chunkText = parsedData.response || parsedData.reply || "";
+
+                                if (chunkText) {
+                                    fullResponseText += chunkText;
+                                    
+                                    // 实时更新 UI (显示累积的纯文本)
+                                    aiTextElement.textContent = fullResponseText; 
+                                    history.scrollTop = history.scrollHeight;
+                                }
+
+                            } catch (e) {
+                                console.error("SSE JSON parsing error:", e, data);
+                            }
+                        }
+                        
+                        // 移动到下一个块
+                        buffer = buffer.substring(position + 2);
+                        position = buffer.indexOf("\n\n");
+                    }
+                }
+                
+                // 3. 最终 Markdown 渲染
+                if (typeof marked !== 'undefined') {
+                    aiTextElement.innerHTML = marked.parse(fullResponseText); 
+                } else {
+                    aiTextElement.textContent = fullResponseText;
+                }
+                
             } catch (error) {
                 console.error("Chat Error:", error);
                 appendMessage('ai', `[系统错误]: 无法处理请求。请重新登录。 (${error.message})`);
@@ -202,3 +209,6 @@
     });
 </script>
 {{ end }}
+
+
+

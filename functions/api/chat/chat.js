@@ -51,35 +51,21 @@ async function generateRAGResponse(env, userQuery) {
     const aiResponse = await env.AI.autorag(RAG_INDEX_NAME).aiSearch({
     query: userQuery,
     rewrite_query: true,
-    stream: false,
+    stream: true,
     });
-
-    // // 1. 获取查询的 Embedding (Workers AI)
-    // const embeddingResponse = await env.AI.run(EMBEDDING_MODEL, { text: userQuery });
-    // const queryEmbedding = embeddingResponse.embedding;
-
-    // // 2. RAG 检索：Vectorize
-    // const searchResults = await env.RAG_INDEX.query({
-    //     vector: queryEmbedding,
-    //     topK: 3, 
-    //     returnMetadata: true
-    // });
+    if (!aiResponse.ok) {
+        var t;
+        let e = await aiResponse.json();
+        if (e && (null == e || null == (t = e.errors[0]) ? void 0 : t.message))
+            throw Error("autorag-error-msg:".concat(e.errors[0].message));
+        throw Error("HTTP error! status: ".concat(a.status, " ").concat(a.statusText))
+    }
+    // 假设 aiResponse 是一个完整的 Response 对象
+    if (!aiResponse.body) {
+        throw new Error("AI Search returned a response without a body/stream.");
+    }
     
-    // 3. 构造上下文
-    // const context = searchResults.matches
-    //     .map(match => match.metadata?.text_chunk || '') 
-    //     .join('\n---\n'); 
-
-    // const systemInstruction = `You are a helpful customer service AI for MOTA TECHLINK. Use the following CONTEXT to answer the user's question accurately. CONTEXT: ${context}`;
-    
-    // // 4. LLM 推理 (Workers AI)
-    // const messages = [
-    //     { role: "system", content: systemInstruction },
-    //     { role: "user", content: userQuery }
-    // ];
-    
-    // const aiResponse = await env.AI.run(INFERENCE_MODEL, { messages });
-    return aiResponse.response || "Sorry, I couldn't generate a response.";
+    return aiResponse;
 }
 
 
@@ -103,19 +89,19 @@ export async function onRequest(context) {
     try {
         const { message } = await request.json();
 
-        // 2. 执行 RAG 检索和 LLM 推理
+        // 2. 执行 RAG 检索和 LLM 推理        
         const aiResponseText = await generateRAGResponse(env, message);
 
-        // 3. 存储对话历史 (chat_history 表)
-        await db.prepare(
-            `INSERT INTO chat_history (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
-        ).bind(
-            crypto.randomUUID(), 
-            user.userId, 
-            message, 
-            aiResponseText, 
-            Date.now()
-        ).run();
+        // // 3. 存储对话历史 (chat_history 表)
+        // await db.prepare(
+        //     `INSERT INTO chat_history (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
+        // ).bind(
+        //     crypto.randomUUID(), 
+        //     user.userId, 
+        //     message, 
+        //     aiResponseText, 
+        //     Date.now()
+        // ).run();
 
         // 4. 返回 AI 响应
         return new Response(JSON.stringify({ reply: aiResponseText }), {
