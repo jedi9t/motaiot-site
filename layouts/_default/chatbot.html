@@ -231,11 +231,18 @@
                                 const parsedData = JSON.parse(data);
                                 const chunkText = parsedData.response || parsedData.reply || "";
 
-                                if (chunkText) {
+                               if (chunkText) {
                                     fullResponseText += chunkText;
                                     
-                                    // 实时更新 UI 
-                                    aiTextElement.textContent = fullResponseText; // 使用有效的引用
+                                    // 🚨 修正：实时 Markdown 渲染并赋值给 innerHTML
+                                    // (这会是 CPU 密集型操作，但可解决渲染问题)
+                                    if (typeof marked !== 'undefined') {
+                                        aiTextElement.innerHTML = marked.parse(fullResponseText); 
+                                    } else {
+                                        // 备份纯文本
+                                        aiTextElement.textContent = fullResponseText;
+                                    }
+                                    
                                     history.scrollTop = history.scrollHeight;
                                 }
 
@@ -251,9 +258,9 @@
                 }
                 
                 // 4. 最终 Markdown 渲染
-                if (typeof marked !== 'undefined') {
+                {{/*  if (typeof marked !== 'undefined') {
                     aiTextElement.innerHTML = marked.parse(fullResponseText); 
-                } 
+                }   */}}
                 
             } catch (error) {
                 // 5. 关键修正：在 catch 块中，直接使用有效的引用 aiTextElement
