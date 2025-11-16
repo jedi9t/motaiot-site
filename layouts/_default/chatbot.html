@@ -24,62 +24,148 @@
     </div>
 </section>
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
+
 <script>
-    // 确保 marked.js 库已在 baseof.html 的底部加载
-    
     document.addEventListener('DOMContentLoaded', () => {
         const input = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const history = document.getElementById('chat-history');
-        const statusElement = document.getElementById('status-message');
         
-        let isAuthenticated = false; 
+        let isAuthenticated = false; // 全局认证状态
+        let thinkingInterval = null; // 用于控制动画的计时器
+       
+        // ----------------------------------------------------
+        // 处理 AI 思考动画 
+        // ----------------------------------------------------
+        function startThinkingAnimation() {
+            // 需求 2: 状态直接显示在输入框中
+            input.placeholder = "AI 正在思考";
+            let dots = 0;
+            
+            // 需求 1: 每秒增加一个点
+            thinkingInterval = setInterval(() => {
+                dots = (dots % 3) + 1;
+                input.placeholder = "AI 正在思考" + ".".repeat(dots);
+            }, 1000);
+            
+            // 确保输入框被禁用，同时禁用发送按钮
+            input.disabled = true;
+            sendBtn.disabled = true;
+        }
 
-        // ------------------- (辅助函数：初始化聊天状态, appendMessage 保持不变) -------------------
-        // [请确保 initializeChat 函数的完整代码放在这里]
-        async function initializeChat() {
-            try {
-                const sessionResponse = await fetch('/api/auth/session');
-                const session = await sessionResponse.json();
-
-                if (session && session.user) {
-                    isAuthenticated = true;
-                    statusElement.innerHTML = `已登录为: <strong>${session.user.name || session.user.email}</strong>。您可以开始对话了。`;
-                    input.disabled = false;
-                    sendBtn.disabled = false;
-                    input.focus();
-                    
-                    // 假设 loadHistory 函数已在外部定义且可用
-                    // await loadHistory(); 
-                } else {
-                    statusElement.innerHTML = `<strong>请注意:</strong> 您需要<a href="/" class="text-blue-400 underline">返回主页登录</a>才能使用 AI 客服。`;
-                    input.disabled = true;
-                    sendBtn.disabled = false; 
-                }
-            } catch (e) {
-                console.error("Initialization Error:", e);
-                statusElement.innerHTML = `<span class="text-red-500">系统错误: 无法连接到认证服务。</span>`;
+        function stopThinkingAnimation(success = true) {
+            clearInterval(thinkingInterval);
+            input.disabled = !isAuthenticated; // 恢复输入状态
+            sendBtn.disabled = !isAuthenticated; // 恢复按钮状态
+            
+            // 恢复 placeholder 
+            if (success) {
+                input.placeholder = "输入您的问题...";
+            } else {
+                input.placeholder = "连接错误，请检查日志。";
             }
         }
-        
+
+        // ----------------------------------------------------
+        // 修正后的辅助函数：添加消息到 UI
+        // ----------------------------------------------------
+        /**
+        * 添加消息到 UI，并根据发送者类型进行 Markdown 渲染。
+        * * 注意：由于后端是阻塞式返回完整文本，前端只需要调用一次 appendMessage(sender, text)。
+        */
         function appendMessage(sender, text) {
             const className = sender === 'user' ? 'text-right text-blue-400' : 'text-left text-green-400';
             const name = sender === 'user' ? '您' : 'AI';
             
-            // 如果是 AI 消息，创建一个新的容器并返回其 ID
-            if (sender === 'ai') {
-                const uniqueId = 'msg-' + Date.now();
-                history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg" data-id="${uniqueId}"><strong>${name}:</strong> <span class="ai-text"></span></div>`;
-                history.scrollTop = history.scrollHeight;
-                return uniqueId;
-            } 
-            
-            // 如果是用户消息
-            const tempDiv = document.createElement('div');
-            tempDiv.textContent = text;
-            history.innerHTML += `<div class="${className} p-2 bg-gray-700/50 rounded-lg whitespace-pre-wrap"><strong>${name}:</strong> ${tempDiv.innerHTML}</div>`;
+            let messageContentHTML;
+
+            if (sender === 'user') {
+                // 1. 用户消息：不需要 Markdown 渲染，直接显示纯文本（textContent的安全做法）
+                //    为了避免 XSS 风险，最好对纯文本进行转义（这里使用 DOM API 简化）
+                const tempDiv = document.createElement('div');
+                tempDiv.textContent = text;
+                messageContentHTML = tempDiv.innerHTML; // 自动转义，保证安全
+            } else {
+                // 2. AI 消息：使用 marked.parse() 渲染 Markdown
+                if (typeof marked !== 'undefined') {
+                    // ✅ 关键：使用 marked.parse() 将 Markdown 转换为 HTML
+                    messageContentHTML = marked.parse(text); 
+                } else {
+                    // 备份：如果 marked 加载失败，显示原始文本（并转义）
+                    const tempDiv = document.createElement('div');
+                    tempDiv.textContent = text;
+                    messageContentHTML = tempDiv.innerHTML;
+                }
+            }
+
+            // 关键：对整个消息体使用 innerHTML 注入渲染后的内容
+            // 这将允许 Markdown 转换成的 HTML（例如 <h1>, <strong>, <ul>）生效
+            history.innerHTML += `
+                <div class="${className} p-2 bg-gray-700/50 rounded-lg">
+                    <strong>${name}:</strong> 
+                    <div class="message-body">${messageContentHTML}</div>
+                </div>
+            `;
             history.scrollTop = history.scrollHeight;
-            return null;
+        }
+
+        // ----------------------------------------------------
+        // 新增函数：加载历史记录
+        // ----------------------------------------------------
+        async function loadHistory() {
+            try {
+                const response = await fetch('/api/chat/history');
+                if (response.status === 401) return; // 仅在登录后尝试加载，未登录不报错
+
+                if (response.ok) {
+                    const historyData = await response.json();
+                    
+                    // 1. 清除初始的欢迎消息
+                    history.innerHTML = ''; 
+
+                    // 2. 渲染历史消息
+                    historyData.forEach(item => {
+                        // 渲染用户消息
+                        if (item.userMessage) {
+                            appendMessage('user', item.userMessage);
+                        }
+                        // 渲染 AI 响应
+                        if (item.aiResponse) {
+                            // 调用 appendMessage，它会负责 Markdown 渲染
+                            appendMessage('ai', item.aiResponse); 
+                        }
+                    });
+                    history.scrollTop = history.scrollHeight;
+                } else {
+                    console.error("Failed to load history:", await response.text());
+                }
+            } catch (e) {
+                console.error("Load History Error:", e);
+            }
+        }
+        async function initializeChat() {
+            try {
+                // 1. 检查 Session
+                const sessionResponse = await fetch('/api/auth/session');
+                const session = await sessionResponse.json();
+
+                if (session && session.user) {
+                    isAuthenticated = true;                   
+                    input.disabled = false;
+                    sendBtn.disabled = false;
+                    input.focus();
+                    // ✅ 关键：登录成功后，加载历史记录
+                    await loadHistory();
+                } else {                    
+                    input.disabled = true;
+                    sendBtn.disabled = true;
+                }
+            } catch (e) {
+                console.error("Initialization Error:", e);
+                {{/*  statusElement.innerHTML = `<span class="text-red-500">系统错误: 无法连接到认证服务。</span>`;  */}}
+            }
         }
         
         // ----------------------------------------------------
@@ -91,9 +177,12 @@
 
             appendMessage('user', message);
             input.value = '';
+            // 启动动画和禁用
+            startThinkingAnimation();
+
             sendBtn.disabled = true;
             input.disabled = true;
-            statusElement.textContent = 'AI 正在思考 (Streaming)...';
+            {{/*  statusElement.textContent = 'AI 正在思考 (Streaming)...';  */}}
             
             const aiMessageId = appendMessage('ai', ''); 
             const aiTextElement = history.querySelector(`[data-id="${aiMessageId}"] .ai-text`);
@@ -102,7 +191,7 @@
 
             try {
                 // 1. 发起流式请求 (注意 Accept: "text/event-stream" 必须在后端设置)
-                const response = await fetch('/api/chat/chat', {
+                const response = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message }),
@@ -159,7 +248,7 @@
                                     fullResponseText += chunkText;
                                     
                                     // 实时更新 UI (显示累积的纯文本)
-                                    aiTextElement.textContent = fullResponseText; 
+                                    aiTextElement.textContent = marked.parse(fullResponseText); 
                                     history.scrollTop = history.scrollHeight;
                                 }
 
@@ -179,8 +268,8 @@
                     aiTextElement.innerHTML = marked.parse(fullResponseText); 
                 } else {
                     aiTextElement.textContent = fullResponseText;
-                }
-                
+                }                           
+                stopThinkingAnimation(true);
             } catch (error) {
                 console.error("Chat Error:", error);
                 appendMessage('ai', `[系统错误]: 无法处理请求。请重新登录。 (${error.message})`);
@@ -190,12 +279,12 @@
                 const errorMessageHTML = tempDiv.innerHTML;
 
                 history.innerHTML += `<div class="text-left text-red-500 p-2 bg-red-700/50 rounded-lg"><strong>AI:</strong> <div class="message-body">${errorMessageHTML}</div></div>`;
-                history.scrollTop = history.scrollHeight;
-                statusElement.textContent = `连接失败: 请检查日志。`;
+                history.scrollTop = history.scrollHeight;                
+                stopThinkingAnimation(false);
             } finally {
                 sendBtn.disabled = false;
                 input.disabled = false;
-                statusElement.textContent = isAuthenticated ? '您可以继续对话了。' : '';
+                
             }
         }
 
@@ -209,6 +298,3 @@
     });
 </script>
 {{ end }}
-
-
-
