@@ -37,7 +37,7 @@ export async function onRequest(context) {
             `SELECT userMessage, aiResponse, timestamp 
              FROM chat_history 
              WHERE userId = ?1 
-             ORDER BY timestamp ASC`
+             ORDER BY timestamp ASC limit 20`
         ).bind(user.userId).all();
         
         // 3. 返回历史记录 JSON 数组
