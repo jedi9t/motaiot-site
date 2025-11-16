@@ -244,7 +244,7 @@
                                     fullResponseText += chunkText;
                                     
                                     // 实时更新 UI (显示累积的纯文本)
-                                    aiTextElement.textContent = marked.parse(fullResponseText); 
+                                    aiTextElement.textContent = fullResponseText; 
                                     history.scrollTop = history.scrollHeight;
                                 }
 
