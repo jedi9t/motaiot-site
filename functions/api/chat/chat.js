@@ -87,41 +87,55 @@ export async function onRequest(context) {
     }
 
     try {
-        const { message } = await request.json();
-
-        // 2. 执行 RAG 检索和 LLM 推理 (返回 Response 对象)
-        const aiResponse = await generateRAGResponse(env, message);
-
-        // 3. Tee (分流)：一个流用于历史记录，一个流用于返回给前端
-        // 关键修正：对 Response.body 调用 tee() 方法
-        const [historyStream, clientStream] = aiResponse.body.tee(); 
-        
-        // 4. 异步存储历史记录 (不阻塞主请求)
-        context.waitUntil((async () => {
-            let historyText = '';
-            const reader = historyStream.getReader();
-            const decoder = new TextDecoder();
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;                
             
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;                
-                buffer += decoder.decode(value, { stream: true });                                    
-                let position = value.indexOf("\n\n")
-                const chunk = value.substring(0, position);
+            // 关键修正 2: 将解码后的块附加到 buffer 
+            buffer += decoder.decode(value, { stream: true });                                    
+            
+            // 关键修正 3: 在 buffer (字符串) 上查找，而不是在 value (Uint8Array) 上
+            let position = buffer.indexOf("\n\n");
+            
+            // 循环处理 buffer 中所有完整的 SSE 消息
+            while (position !== -1) {
+                const chunk = buffer.substring(0, position);
                 const lines = chunk.split("\n");
                 let data = "";                    
+                
                 for (let line of lines) {
                     if (line.startsWith("data:")) {
                         data += line.substring(5).trimLeft(); 
                     }
                 }
-                const parsedData = JSON.parse(data);
-                const chunkText = parsedData.response
-                if (chunkText) {
-                    historyText += chunkText;
-                }                
+
+                if (data) {
+                    if (data === '[DONE]') {
+                        // 达到流的末尾标记
+                        break; 
+                    }
+                    
+                    try {
+                        // 尝试解析 JSON
+                        const parsedData = JSON.parse(data);
+                        // 确保我们只添加实际的文本块
+                        const chunkText = parsedData.response || parsedData.reply;
+                        if (chunkText) {
+                            historyText += chunkText;
+                        }
+                    } catch (e) {
+                        console.error("History stream JSON parse error (skipping chunk):", e, data);
+                    }
+                }
+                
+                // 从 buffer 中移除已处理的块
+                buffer = buffer.substring(position + 2);
+                // 查找下一个消息
+                position = buffer.indexOf("\n\n");
             }
-            
+        }            
+        // 确保我们收集到了一些文本再存入数据库
+        if (historyText.trim().length > 0) {
             // 存储对话历史 (chat_history 表)
             await db.prepare(                
                 `INSERT INTO chat_history (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
@@ -129,22 +143,10 @@ export async function onRequest(context) {
                 crypto.randomUUID(), 
                 user.userId, 
                 message, 
-                historyText, 
+                historyText, // 完整的、拼接好的 AI 回复
                 Date.now()
             ).run();
-        })());
-
-
-        // 5. 将客户端流返回给前端
-        // 关键：Headers 必须是 SSE/Event Stream 格式
-        return new Response(clientStream, {
-            headers: { 
-                'Content-Type': 'text/event-stream',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive'
-            }
-        });
-
+        }
     } catch (e) {
         console.error('Chat API Fatal Error:', e);
         // 如果出错，返回错误信息，而不是流
