@@ -89,27 +89,52 @@ export async function onRequest(context) {
     try {
         const { message } = await request.json();
 
-        // 2. 执行 RAG 检索和 LLM 推理        
-        const aiResponseText = await generateRAGResponse(env, message);
+        // 2. 执行 RAG 检索和 LLM 推理 (返回 Response 对象)
+        const aiResponse = await generateRAGResponse(env, message);
 
-        // // 3. 存储对话历史 (chat_history 表)
-        // await db.prepare(
-        //     `INSERT INTO chat_history (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
-        // ).bind(
-        //     crypto.randomUUID(), 
-        //     user.userId, 
-        //     message, 
-        //     aiResponseText, 
-        //     Date.now()
-        // ).run();
+        // 3. Tee (分流)：一个流用于历史记录，一个流用于返回给前端
+        // 关键修正：对 Response.body 调用 tee() 方法
+        const [historyStream, clientStream] = aiResponse.body.tee(); 
+        
+        // 4. 异步存储历史记录 (不阻塞主请求)
+        context.waitUntil((async () => {
+            let historyText = '';
+            const reader = historyStream.getReader();
+            const decoder = new TextDecoder();
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                historyText += decoder.decode(value, { stream: true });
+            }
+            
+            // 存储对话历史 (ChatHistory 表)
+            await db.prepare(
+                // 确保表名为 ChatHistory 或 chat_history
+                `INSERT INTO ChatHistory (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
+            ).bind(
+                crypto.randomUUID(), 
+                user.userId, 
+                message, 
+                historyText, 
+                Date.now()
+            ).run();
+        })());
 
-        // 4. 返回 AI 响应
-        return new Response(JSON.stringify({ reply: aiResponseText }), {
-            headers: { 'Content-Type': 'application/json' }
+
+        // 5. 将客户端流返回给前端
+        // 关键：Headers 必须是 SSE/Event Stream 格式
+        return new Response(clientStream, {
+            headers: { 
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
+            }
         });
 
     } catch (e) {
         console.error('Chat API Fatal Error:', e);
+        // 如果出错，返回错误信息，而不是流
         return new Response(`Processing error: ${e.message}`, { status: 500 });
     }
 }
