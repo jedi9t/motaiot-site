@@ -102,7 +102,11 @@ export async function onRequest(context) {
             const reader = historyStream.getReader();
             const decoder = new TextDecoder();
             
-            while (true) {
+            // 关键修正 1: 必须初始化 buffer
+            let buffer = ''; 
+
+            try {
+                while (true) {
                     const { done, value } = await reader.read();
                     if (done) break;                
                     
@@ -150,20 +154,24 @@ export async function onRequest(context) {
                     }
                 }
             
-            // 存储对话历史 (chat_history 表)
-            // 确保我们收集到了一些文本再存入数据库
-            if (historyText.trim().length > 0) {
-                // 存储对话历史 (chat_history 表)
-                await db.prepare(                
-                    `INSERT INTO chat_history (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
-                ).bind(
-                    crypto.randomUUID(), 
-                    user.userId, 
-                    message, 
-                    historyText, // 完整的、拼接好的 AI 回复
-                    Date.now()
-                ).run();
-            } 
+                // 确保我们收集到了一些文本再存入数据库
+                if (historyText.trim().length > 0) {
+                    // 存储对话历史 (chat_history 表)
+                    await db.prepare(                
+                        `INSERT INTO chat_history (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
+                    ).bind(
+                        crypto.randomUUID(), 
+                        user.userId, 
+                        message, 
+                        historyText, // 完整的、拼接好的 AI 回复
+                        Date.now()
+                    ).run();
+                }
+
+            } catch (e) {
+                console.error("Failed to process history stream:", e);
+                // 即使历史记录失败，也不要让它崩溃
+            }
         })());
 
 
