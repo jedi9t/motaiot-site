@@ -108,10 +108,9 @@ export async function onRequest(context) {
                 historyText += decoder.decode(value, { stream: true });
             }
             
-            // 存储对话历史 (ChatHistory 表)
-            await db.prepare(
-                // 确保表名为 ChatHistory 或 chat_history
-                `INSERT INTO ChatHistory (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
+            // 存储对话历史 (chat_history 表)
+            await db.prepare(                
+                `INSERT INTO chat_history (id, userId, userMessage, aiResponse, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)`
             ).bind(
                 crypto.randomUUID(), 
                 user.userId, 
