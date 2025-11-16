@@ -3,10 +3,6 @@
     <div class="container lg:col-8 mx-auto">
         <h1 class="mb-6 text-h3 lg:text-h2 text-center">🤖 AI CUSTOM SUPPORT</h1>
         
-        <div id="auth-status-bar" class="text-center mb-4 p-3 border-b border-gray-700">
-            <p class="text-yellow-400" id="status-message">Checking login status...</p>
-        </div>
-
         <div class="bg-gray-800 rounded-xl shadow-2xl overflow-hidden">
             <div id="chat-history" class="p-4 h-[60vh] overflow-y-scroll text-sm space-y-3">
                 <div class="text-left text-gray-400"><strong>AI:</strong> WELCOME, I am MOTA TECHLINK AI CS Agent, what can I do for you?</div>
@@ -191,7 +187,7 @@
 
             try {
                 // 1. 发起流式请求 (注意 Accept: "text/event-stream" 必须在后端设置)
-                const response = await fetch('/api/chat', {
+                const response = await fetch('/api/chat/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message }),
