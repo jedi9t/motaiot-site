@@ -42,7 +42,7 @@
             
             // 需求 1: 每秒增加一个点
             thinkingInterval = setInterval(() => {
-                dots = (dots % 3) + 1;
+                dots = (dots % 30) + 1;
                 input.placeholder = "AI 正在思考" + ".".repeat(dots);
             }, 1000);
             

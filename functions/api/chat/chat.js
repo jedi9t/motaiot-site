@@ -104,8 +104,22 @@ export async function onRequest(context) {
             
             while (true) {
                 const { done, value } = await reader.read();
-                if (done) break;
-                historyText += decoder.decode(value, { stream: true });
+                if (done) break;                
+                buffer += decoder.decode(value, { stream: true });                                    
+                let position = value.indexOf("\n\n")
+                const chunk = value.substring(0, position);
+                const lines = chunk.split("\n");
+                let data = "";                    
+                for (let line of lines) {
+                    if (line.startsWith("data:")) {
+                        data += line.substring(5).trimLeft(); 
+                    }
+                }
+                const parsedData = JSON.parse(data);
+                const chunkText = parsedData.response
+                if (chunkText) {
+                    historyText += chunkText;
+                }                
             }
             
             // 存储对话历史 (chat_history 表)
