@@ -165,46 +165,39 @@
         }
         
         // ----------------------------------------------------
-        // 主发送函数 (处理 Streaming & SSE 解析)
+        // 主发送函数 
         // ----------------------------------------------------
         async function sendMessage() {
             const message = input.value.trim();
             if (!message || !isAuthenticated) { /* ... */ return; }
 
+            // 1. 初始化和 UI 准备
             appendMessage('user', message);
             input.value = '';
-            // 启动动画和禁用
             startThinkingAnimation();
 
-            sendBtn.disabled = true;
-            input.disabled = true;
-            {{/*  statusElement.textContent = 'AI 正在思考 (Streaming)...';  */}}
-            
-            const aiMessageId = appendMessage('ai', ''); 
-            const aiTextElement = history.querySelector(`[data-id="${aiMessageId}"] .ai-text`);
+            // 关键：aiTextElement 现在是 span 元素的有效引用
+            const aiTextElement = appendMessage('ai', ''); 
             
             let fullResponseText = '';
+            let successFlag = true; // 跟踪是否成功完成流
 
             try {
-                // 1. 发起流式请求 (注意 Accept: "text/event-stream" 必须在后端设置)
-                const response = await fetch('/api/chat/chat', {
+                // 2. 发起流式请求 
+                const response = await fetch('/api/chat/chat', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: message }),
                 });
 
                 if (response.status === 401) { throw new Error("会话无效，请重新登录。"); }
-                
                 if (!response.ok) {
                     const errorText = await response.text(); 
                     throw new Error(`API 错误: ${response.status} - ${errorText}`);
                 }
+                if (!response.body) { throw new Error("服务器未返回流数据。"); }
                 
-                if (!response.body) {
-                    throw new Error("服务器未返回流数据。");
-                }
-                
-                // 2. SSE 解析和流式读取逻辑
+                // 3. SSE 解析和流式读取逻辑
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let buffer = ''; 
@@ -222,34 +215,32 @@
                         const lines = chunk.split("\n");
                         let data = "";
                         
-                        // 提取 SSE data: 部分
                         for (let line of lines) {
                             if (line.startsWith("data:")) {
-                                data += line.substring(5).trimLeft(); // 移除 "data:"
+                                data += line.substring(5).trimLeft(); 
                             }
                         }
 
                         if (data) {
                             if (data === '[DONE]') {
+                                position = -1; // 强制退出外部循环
                                 break; 
                             }
                             
                             try {
-                                // 解析 JSON (响应数据：{"response": "..."})
                                 const parsedData = JSON.parse(data);
-                                
                                 const chunkText = parsedData.response || parsedData.reply || "";
 
                                 if (chunkText) {
                                     fullResponseText += chunkText;
                                     
-                                    // 实时更新 UI (显示累积的纯文本)
-                                    aiTextElement.textContent = fullResponseText; 
+                                    // 实时更新 UI 
+                                    aiTextElement.textContent = fullResponseText; // 使用有效的引用
                                     history.scrollTop = history.scrollHeight;
                                 }
 
                             } catch (e) {
-                                console.error("SSE JSON parsing error:", e, data);
+                                console.error("SSE JSON parsing error (corrupt chunk):", e, data);
                             }
                         }
                         
@@ -259,31 +250,23 @@
                     }
                 }
                 
-                // 3. 最终 Markdown 渲染
+                // 4. 最终 Markdown 渲染
                 if (typeof marked !== 'undefined') {
                     aiTextElement.innerHTML = marked.parse(fullResponseText); 
-                } else {
-                    aiTextElement.textContent = fullResponseText;
-                }                           
-                stopThinkingAnimation(true);
-            } catch (error) {
-                console.error("Chat Error:", error);
-                appendMessage('ai', `[系统错误]: 无法处理请求。请重新登录。 (${error.message})`);
-                // 仅显示一条错误消息
-                const tempDiv = document.createElement('div');
-                tempDiv.textContent = `[系统错误]: ${error.message}`;
-                const errorMessageHTML = tempDiv.innerHTML;
-
-                history.innerHTML += `<div class="text-left text-red-500 p-2 bg-red-700/50 rounded-lg"><strong>AI:</strong> <div class="message-body">${errorMessageHTML}</div></div>`;
-                history.scrollTop = history.scrollHeight;                
-                stopThinkingAnimation(false);
-            } finally {
-                sendBtn.disabled = false;
-                input.disabled = false;
+                } 
                 
+            } catch (error) {
+                // 5. 关键修正：在 catch 块中，直接使用有效的引用 aiTextElement
+                successFlag = false;
+                console.error("Chat Error:", error);
+
+                // 清空内容并显示错误信息 (避免创建破坏引用的新 div)
+                aiTextElement.innerHTML = `<span class="text-red-400">[系统错误]: ${error.message}</span>`;
+                
+            } finally {
+                stopThinkingAnimation(successFlag);
             }
         }
-
         sendBtn.addEventListener('click', sendMessage);
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendMessage();
