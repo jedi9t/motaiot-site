@@ -45,14 +45,23 @@ async function checkSession() {
     const container = document.getElementById('auth-buttons-container');
     
     if (session && session.user) {
-        // --- 修正：已登录状态 ---
+        // --- 已登录状态, 显示头像, mouse over 显示name ---
         const userName = session.user.name || session.user.email.split('@')[0];
-        
+        const userAvatar = session.user.avatar || 'https://www.gravatar.com/avatar/?d=mp&s=40';
         container.innerHTML = `
+            <div class="relative group">
+                <img src="${userAvatar}" alt="User Avatar" class="w-8 h-8 rounded-full cursor-pointer">
+                <div class="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-sm rounded py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    ${userName}
+                </div>
+            </div>            
+        `;
+        
+        {{/*  container.innerHTML = `
             <span class="text-text-dark dark:text-white font-semibold mr-3 whitespace-nowrap">
                 Welcome, ${userName}
             </span>
-        `;
+        `;  */}}
     } else {
         // 未登录状态
         getProviders(); // 渲染登录按钮

@@ -32,14 +32,14 @@ async function getD1Session(db, sessionId, userId) {
 
 /**
  * 从 D1 数据库获取用户数据
- * 假设 D1 表名为 'users'，字段包括 id, name, email
+ * 假设 D1 表名为 'users'，字段包括 id, name, email, avatar
  * @param {D1Database} db - D1 数据库绑定对象 (env.hugo_auth_db)
  * @param {string} userId - 用户ID
  * @returns {Promise<object|null>} - 用户对象 (包含 id, name, email)
  */
 async function getD1User(db, userId) {
     const { results } = await db.prepare(
-        `SELECT id, name, email FROM users WHERE id = ?1`
+        `SELECT id, name, email,avatar FROM users WHERE id = ?1`
     ).bind(userId).all();
     
     // 返回第一个结果，如果没有则返回 null
@@ -68,7 +68,7 @@ export async function onRequest(context) {
             if (sessionCheck.length > 0 && sessionCheck[0].expires > Date.now()) {
                 // 4. 获取用户数据 (假设此用户存在)
                 const { results: userResult } = await db.prepare(
-                    `SELECT id, name, email FROM users WHERE id = ?1`
+                    `SELECT id, name, email, avatar FROM users WHERE id = ?1`
                 ).bind(userId).all();
 
                 if (userResult.length > 0) {

@@ -89,6 +89,7 @@ export async function onRequest(context) {
         const profile = await userResponse.json();
         const userEmail = profile.email;
         const userName = profile.name || userEmail;
+        const userAvatar = profile.picture || null;       
         
         if (!userEmail) {
              return new Response('OAuth provider did not return an email address.', { status: 400 });
@@ -102,14 +103,18 @@ export async function onRequest(context) {
         // 查找或创建用户 (users 表)
         let { results: userCheck } = await db.prepare(`SELECT id FROM users WHERE email = ?1`).bind(userEmail).all();
         
-        if (userCheck.length > 0) {
+        if (userCheck.length > 0) {            
             userId = userCheck[0].id;
+            await db.prepare(
+                `UPDATE users SET name = ?1, avatar = ?2 WHERE id = ?3`
+            ).bind(userName, userAvatar, userId).run();
+            console.log('Existing user profile updated:', userId);
         } else {
-            // 创建新用户
+            // [MODIFIED] 创建新用户，包含 name, email, 和 avatar
             userId = newUserUUID; 
             await db.prepare(
-                `INSERT INTO users (id, name, email, emailVerified) VALUES (?1, ?2, ?3, ?4)`
-            ).bind(userId, userName, userEmail, Date.now()).run();
+                `INSERT INTO users (id, name, email, emailVerified, avatar) VALUES (?1, ?2, ?3, ?4, ?5)`
+            ).bind(userId, userName, userEmail, Date.now(), userAvatar).run();
             console.log('New user created:', userId);
         }
 
