@@ -10,7 +10,7 @@ testimonials:
     avatar: "/images/avatar-sm.png"
     content: "Functional Prototype & Feasibility Report. Technology: AI Model Training, Fine-tuning, RAG. We use Physical World Engines and Automated Annotation for highly efficient visual model data preparation."
 
-  - name: "Accelerated Market Validation & Small Batch"
+  - name: "Market Validation & Small Batch"
     designation: "Stage 2"
     avatar: "/images/avatar-sm.png"
     content: "Mass-Producible Design Files (DFM) & Small Batch Samples. Value: Low-cost validation and market testing (e.g., crowdfunding) with minimal risk."
