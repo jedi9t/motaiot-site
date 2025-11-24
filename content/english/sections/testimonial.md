@@ -5,25 +5,20 @@ description: "Don't just take our word for it - hear from some of our satisfied 
 
 # Testimonials
 testimonials:
-  - name: "Marvin McKinney"
-    designation: "Web Designer"
+  - name: "Rapid Prototype Validation"
+    designation: "Stage 1"
     avatar: "/images/avatar-sm.png"
-    content: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui iusto illo molestias, assumenda expedita commodi inventore non itaque molestiae voluptatum dolore, facilis sapiente, repellat veniam."
+    content: "Functional Prototype & Feasibility Report. Technology: AI Model Training, Fine-tuning, RAG. We use Physical World Engines and Automated Annotation for highly efficient visual model data preparation."
 
-  - name: "Marvin McKinney"
-    designation: "Web Designer"
+  - name: "Accelerated Market Validation & Small Batch"
+    designation: "Stage 2"
     avatar: "/images/avatar-sm.png"
-    content: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui iusto illo molestias, assumenda expedita commodi inventore non itaque molestiae voluptatum dolore, facilis sapiente, repellat veniam."
+    content: "Mass-Producible Design Files (DFM) & Small Batch Samples. Value: Low-cost validation and market testing (e.g., crowdfunding) with minimal risk."
 
-  - name: "Marvin McKinney"
-    designation: "Web Designer"
+  - name: "Mass Production & Global Delivery"
+    designation: "Stage 3"
     avatar: "/images/avatar-sm.png"
-    content: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui iusto illo molestias, assumenda expedita commodi inventore non itaque molestiae voluptatum dolore, facilis sapiente, repellat veniam."
-
-  - name: "Marvin McKinney"
-    designation: "Web Designer"
-    avatar: "/images/avatar-sm.png"
-    content: "Lorem ipsum dolor sit amet consectetur adipisicing elit. Qui iusto illo molestias, assumenda expedita commodi inventore non itaque molestiae voluptatum dolore, facilis sapiente, repellat veniam."
+    content: "Large-Scale Production Products & Full QC Reports. Capability: Leveraging China's high-efficiency industrial capacity and global logistics (including European Skynet resources)."  
 
 # don't create a separate page
 build:

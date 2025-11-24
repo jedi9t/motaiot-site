@@ -1,19 +1,19 @@
 ---
 # Banner
 banner:
-  title: "The Ultimate Starter Template You Need To Start Your Hugo Project"
-  content: "Hugoplate is a free starter template built with Hugo and TailwindCSS, providing everything you need to jumpstart your Hugo project and save valuable time."
+  title: "The Trusted Bridge: Ultra-Speed Conversion from Cyber Concept to Global Reality."
+  content: "MOTA TECHLINK, the Full Stack Integrator, provides the fastest path to market, offering world-class technology at the lowest global price."
   image: "/images/banner.png"
   button:
-    enable: true
-    label: "Get Started For Free"
+    enable: false
+    label: "Launch Your Project Now"
     link: "https://github.com/zeon-studio/hugoplate"
 
 # Features
 features:
-  - title: "What's Included in Hugoplate"
+  - title: "Capture Ephemeral Opportunities"
     image: "/images/service-1.png"
-    content: "Hugoplate is a comprehensive starter template that includes everything you need to get started with your Hugo project. What's Included in Hugoplate"
+    content: "In an era where LLMs update constantly, business opportunities are fleeting. We prioritize rapid prototype validation, sample testing, and quick scaling to ensure you don't miss the market window."
     bulletpoints:
       - "10+ Pre-build pages"
       - "95+ Google Pagespeed Score"
@@ -26,21 +26,21 @@ features:
       label: "Get Started Now"
       link: "#"
 
-  - title: "Discover the Key Features Of Hugo"
+  - title: "U.S. Legal Trust Foundation"
     image: "/images/service-2.png"
-    content: "Hugo is an all-in-one web framework for building fast, content-focused websites. It offers a range of exciting features for developers and website creators. Some of the key features are:"
+    content: "Avoid IP risk. Our U.S. legal entity, MOTA Inc. (located in Brooklyn, New York), provides top-tier NDA and legal contract assurance for secure China manufacturing:"
     bulletpoints:
       - "Zero JS, by default: No JavaScript runtime overhead to slow you down."
       - "Customizable: Tailwind, MDX, and 100+ other integrations to choose from."
       - "UI-agnostic: Supports React, Preact, Svelte, Vue, Solid, Lit and more."
     button:
-      enable: true
+      enable: false
       label: "Get Started Now"
       link: "https://github.com/zeon-studio/hugoplate"
 
-  - title: "The Top Reasons to Choose Hugo for Your Hugo Project"
+  - title: "Extreme ROI & Cost Efficiency"
     image: "/images/service-3.png"
-    content: "With Hugo, you can build modern and content-focused websites without sacrificing performance or ease of use."
+    content: Access the efficiency and scale of the mature supply chain while benefiting from services that are arguably the lowest priced globally."
     bulletpoints:
       - "Instantly load static sites for better user experience and SEO."
       - "Intuitive syntax and support for popular frameworks make learning and using Hugo a breeze."

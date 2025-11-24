@@ -1,6 +1,6 @@
 ---
-title: "Contact"
+title: "Ready to Accelerate? Contact the Full Stack Integrator."
 meta_title: ""
-description: "this is meta description"
+description: "Speak to a MOTA expert today about your prototype, DFM, or fast scaling needs."
 draft: false
 ---
