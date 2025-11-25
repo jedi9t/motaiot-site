@@ -1,0 +1,5 @@
+{{ if .id }}
+  {{ with .page }}
+    {{ .RenderShortcode (printf "youtube %s" $.id) }}
+  {{ end }}
+{{ end }}
