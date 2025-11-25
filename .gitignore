@@ -21,4 +21,5 @@ public/
 .env
 .dev.vars
 .DS_Store
-.vscode/
+.vscode/hugo_stats.json
+assets/images/youtube嵌入失败.png
