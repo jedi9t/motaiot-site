@@ -161,6 +161,7 @@
       "gx-5",
       "h-6",
       "h-[60vh]",
+      "h-full",
       "h2",
       "h3",
       "h5",
@@ -188,7 +189,6 @@
       "justify-center",
       "left-0",
       "left-1/2",
-      "lg:!max-w-[800px]",
       "lg:bg-green-200",
       "lg:block",
       "lg:col-10",
@@ -463,8 +463,7 @@
       "terms-of-service-for-motaiotcom",
       "theme-switcher",
       "unordered-list",
-      "we-know-youre-dealing-in-stolen-ore",
-      "youtube-video"
+      "we-know-youre-dealing-in-stolen-ore"
     ]
   }
 }

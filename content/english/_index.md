@@ -3,6 +3,7 @@
 banner:
   title: "The Trusted Bridge: Ultra-Speed Conversion from Cyber Concept to Reality"
   content: "MOTA TECHLINK, the Full Stack Integrator, provides the fastest path to market, offering world-class technology at the lowest global price."
+  image: "/images/banner.png"
   youtube_id: "0f5FOQRsEbY"
   button:
     enable: false
