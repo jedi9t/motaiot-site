@@ -31,7 +31,7 @@ features:
 
   - title: "U.S. Legal Trust Foundation"
     image: "/images/service-2.png"
-    content: "Avoid IP risk. Our U.S. legal entity, MOTA Inc. (located in Brooklyn, New York), provides top-tier NDA and legal contract assurance for secure China manufacturing:"
+    content: "Avoid IP risk. Our U.S. legal entity, MOTA Inc. (located in New York, U.S.A), provides top-tier NDA and legal contract assurance for secure China manufacturing:"
     # bulletpoints:
     #   - "Zero JS, by default: No JavaScript runtime overhead to slow you down."
     #   - "Customizable: Tailwind, MDX, and 100+ other integrations to choose from."
