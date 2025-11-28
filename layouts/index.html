@@ -26,18 +26,62 @@
             {{ end }}
           </div>
           <div class="col-12">
-            {{ if .youtube_id }}
-            <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">              
-              <iframe
-                src="https://www.youtube-nocookie.com/embed/{{ .youtube_id }}?autoplay=1&mute=1&rel=0&playsinline=1&loop=1&playlist={{ .youtube_id }}"
-                title="{{ .title }}"
-                class="absolute top-0 left-0 h-full w-full"
-                loading="lazy"
-                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-              </iframe>
-            </div>
+           {{ if .youtube_id }}
+              {{/* 1. 保持原有的宽高比容器，防止页面抖动 (CLS) */}}
+              <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%;" class="lite-youtube-wrapper">
+                
+                {{/* 2. 创建一个占位容器，点击时触发 loadVideo 函数 */}}
+                <div 
+                  id="yt-placeholder-{{ .youtube_id }}"
+                  class="absolute top-0 left-0 h-full w-full cursor-pointer group"
+                  onclick="loadYoutubeIframe(this, '{{ .youtube_id }}', '{{ .title }}')"
+                  style="background-color: #000; display: flex; align-items: center; justify-content: center;"
+                >
+                  
+                  {{/* 3. 加载封面图 (WebP 或 JPG)，这里使用 YouTube 的高清封面接口 */}}
+                  <img 
+                    src="https://i.ytimg.com/vi/{{ .youtube_id }}/maxresdefault.jpg" 
+                    alt="{{ .title }}" 
+                    class="absolute top-0 left-0 h-full w-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-200"
+                    loading="lazy"
+                  >
+
+                  {{/* 4. 一个漂亮的 SVG 播放按钮 (模仿 YouTube 原生样式) */}}
+                  <div class="z-10 bg-black/70 rounded-full p-4 pl-5 group-hover:bg-[#f00] transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+
+                </div>
+              </div>
+
+              {{/* 5. 极简的 JS 脚本，用于点击后替换 iframe */}}
+              <script>
+                function loadYoutubeIframe(element, videoId, title) {
+                  // 保持你原有的参数配置 (autoplay=1 确保点击后立即播放)
+                  var iframeUrl = "https://www.youtube-nocookie.com/embed/" + videoId + "?autoplay=1&mute=1&rel=0&playsinline=1&loop=1&playlist=" + videoId;
+                  
+                  var iframe = document.createElement("iframe");
+                  iframe.setAttribute("src", iframeUrl);
+                  iframe.setAttribute("title", title);
+                  iframe.setAttribute("frameborder", "0");
+                  iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
+                  iframe.setAttribute("allowfullscreen", "");
+                  
+                  // 样式类保持与你原有的一致
+                  iframe.setAttribute("class", "absolute top-0 left-0 h-full w-full");
+                  iframe.style.position = "absolute";
+                  iframe.style.top = "0";
+                  iframe.style.left = "0";
+                  iframe.style.width = "100%";
+                  iframe.style.height = "100%";
+
+                  // 替换掉原来的占位图容器
+                  element.parentNode.replaceChild(iframe, element);
+                }
+              </script>
+
             {{ else }}
               {{ partial "image" (dict "Src" .image "Alt" "Banner image" "Loading" "eager" "Class" "mx-auto lg:!max-w-[800px]" "DisplayXL" "800x" ) }}
             {{ end }}
