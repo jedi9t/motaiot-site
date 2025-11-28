@@ -1,24 +1,23 @@
-# 1. 针对 HTML 文件（网页本身）：
-# 浏览器不缓存或只缓存很短时间（比如 0秒 或 1小时），
-# 这样用户每次都能看到最新文章。
+# 1. 首页和所有 HTML 页面 (根目录及子目录的所有路径)
+# 这一条必须放在最前面，确保 HTML 始终校验更新
 /*
   Cache-Control: public, max-age=0, must-revalidate
 
-# 2. 针对静态资源（图片、CSS、JS、字体）：
-# 这些文件很大且不常变，可以缓存很久（比如 2天），实现秒开。
-/*.jpg
-  Cache-Control: public, max-age=172800, immutable
-/*.jpeg
-  Cache-Control: public, max-age=172800, immutable
-/*.png
-  Cache-Control: public, max-age=172800, immutable
-/*.webp
-  Cache-Control: public, max-age=172800, immutable
-/*.gif
-  Cache-Control: public, max-age=172800, immutable
-/*.css
-  Cache-Control: public, max-age=172800, immutable
-/*.js
-  Cache-Control: public, max-age=172800, immutable
+# 2. 针对 Hugo 的资源文件夹 (关键修改在这里！)
+# 直接匹配 /images/ 下的所有文件，不管它是什么后缀
+/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 3. 针对 CSS 文件夹
+/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 4. 针对 JS 文件夹 (如果有)
+/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 5. 针对字体或其他位于根目录的特定资源 (兜底)
 /*.woff2
-  Cache-Control: public, max-age=172800, immutable
+  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
