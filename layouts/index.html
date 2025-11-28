@@ -36,15 +36,15 @@
                   class="absolute top-0 left-0 h-full w-full cursor-pointer group"
                   onclick="loadYoutubeIframe(this, '{{ .youtube_id }}', '{{ .title }}')"
                   style="background-color: #000; display: flex; align-items: center; justify-content: center;"
-                >
+                >                                    
+                  {{/* 方案 A：如果你文章的 Front Matter 里定义了 image 字段，就用那个图作为视频封面 */}}
+                  {{ if .image }}
+                    {{ partial "image" (dict "Src" .image "Alt" .title "Class" "absolute top-0 left-0 h-full w-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-200") }}
                   
-                  {{/* 3. 加载封面图 (WebP 或 JPG)，这里使用 YouTube 的高清封面接口 */}}
-                  <img 
-                    src="https://i.ytimg.com/vi/{{ .youtube_id }}/maxresdefault.jpg" 
-                    alt="{{ .title }}" 
-                    class="absolute top-0 left-0 h-full w-full object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-200"
-                    loading="lazy"
-                  >
+                  {{/* 方案 B：如果没有定义图片，就用一个纯黑背景或者你网站的默认 Logo，坚决不去连 i.ytimg.com */}}
+                  {{ else }}
+                    <div class="absolute top-0 left-0 h-full w-full bg-gray-900 opacity-90"></div>
+                  {{ end }}
 
                   {{/* 4. 一个漂亮的 SVG 播放按钮 (模仿 YouTube 原生样式) */}}
                   <div class="z-10 bg-black/70 rounded-full p-4 pl-5 group-hover:bg-[#f00] transition-colors duration-300">
