@@ -1,0 +1,63 @@
+{{- /* 1. 解析基础参数 */ -}}
+{{- $videoId := .videoid -}}
+{{- $title   := .title | default "Play: YouTube Video" -}}
+{{- $class   := .Class | default "mx-auto lg:!max-w-[800px] shadow-lg rounded-lg" -}}
+{{- $image   := .image -}}
+
+{{- /* 2. 解析高级控制参数 */ -}}
+{{- $mute     := .mute | default false -}}
+{{- $repeat   := .repeat | default false -}}
+{{- $playlist := .playlist | default "" -}}
+{{- $rawParams:= .params | default "" -}} {{- /* 允许用户手动传入其他 params */ -}}
+
+{{- /* 3. 构建 params 字符串列表 */ -}}
+{{- $paramsList := slice -}}
+
+{{- /* 如果用户手动传入了 params，先加入 */ -}}
+{{- if $rawParams -}}
+  {{- $paramsList = $paramsList | append $rawParams -}}
+{{- end -}}
+
+{{- /* 处理静音 */ -}}
+{{- if $mute -}}
+  {{- $paramsList = $paramsList | append "mute=1" -}}
+{{- end -}}
+
+{{- /* 处理循环播放 */ -}}
+{{- if $repeat -}}
+  {{- $paramsList = $paramsList | append "loop=1" -}}
+  {{- /* YouTube 强制要求：单视频循环必须指定 playlist 参数为自身 ID */ -}}
+  {{- if not $playlist -}}
+     {{- $paramsList = $paramsList | append (printf "playlist=%s" $videoId) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* 处理播放列表 */ -}}
+{{- if $playlist -}}
+  {{- $paramsList = $paramsList | append (printf "playlist=%s" $playlist) -}}
+{{- end -}}
+
+{{- /* 将列表合并为 URL 参数字符串 (例如: mute=1&loop=1) */ -}}
+{{- $finalParams := delimit $paramsList "&" -}}
+
+
+{{- if $videoId -}}
+  <lite-youtube
+    videoid="{{ $videoId }}"
+    videotitle="{{ $title }}"
+    class="{{ $class }}"
+    {{ with $finalParams }}params="{{ . }}"{{ end }}
+    {{ if not $image }}style="background-image: url('https://i.ytimg.com/vi/{{ $videoId }}/hqdefault.jpg');"{{ end }}
+  >
+    {{- /* 自定义封面 */ -}}
+    {{- if $image -}}
+      <img slot="image" src="{{ $image | absURL }}" alt="{{ $title }}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" />
+    {{- end -}}
+
+    <a href="https://youtube.com/watch?v={{ $videoId }}" class="lty-playbtn" title="{{ $title }}">
+      <span class="lyt-visually-hidden">{{ $title }}</span>
+    </a>
+  </lite-youtube>
+{{- else -}}
+  {{- errorf "youtube-lite partial requires a 'videoid' parameter." -}}
+{{- end -}}
