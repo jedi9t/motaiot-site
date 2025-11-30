@@ -1,43 +1,37 @@
 {{- /* 1. 解析基础参数 */ -}}
 {{- $videoId := .videoid -}}
 {{- $title   := .title | default "Play: YouTube Video" -}}
-{{- $class   := .Class | default "mx-auto lg:!max-w-[800px] shadow-lg rounded-lg" -}}
+{{- /*
+   CLS 修复核心：
+   我们不能只依赖默认值，因为如果用户传入了 "Class"，默认值就会失效。
+   我们需要强制将必要的布局类与用户传入的类合并。
+   必要的类：
+   - block, w-full: 确保它是一个占据整行的块。
+   - aspect-video: Tailwind 自带的 16/9 比例类。这是防止抖动的关键。
+   - relative: 组件内部绝对定位需要依赖它。
+   - bg-gray-100: 一个浅色背景占位，在封面图加载前显示。
+*/ -}}
+{{- $userClass := .Class | default "mx-auto" -}}
+{{- /* 使用 printf 将强制类放在前面，用户类放在后面 */ -}}
+{{- $finalClass := printf "block w-full relative aspect-video bg-gray-100 %s" $userClass -}}
+
 {{- $image   := .image -}}
 
 {{- /* 2. 解析高级控制参数 */ -}}
 {{- $mute     := .mute | default false -}}
 {{- $repeat   := .repeat | default false -}}
 {{- $playlist := .playlist | default "" -}}
-{{- $rawParams:= .params | default "" -}} {{- /* 允许用户手动传入其他 params */ -}}
+{{- $rawParams:= .params | default "" -}}
 
-{{- /* 3. 构建 params 字符串列表 */ -}}
+{{- /* 3. 构建 params 字符串列表 (保持不变) */ -}}
 {{- $paramsList := slice -}}
-
-{{- /* 如果用户手动传入了 params，先加入 */ -}}
-{{- if $rawParams -}}
-  {{- $paramsList = $paramsList | append $rawParams -}}
-{{- end -}}
-
-{{- /* 处理静音 */ -}}
-{{- if $mute -}}
-  {{- $paramsList = $paramsList | append "mute=1" -}}
-{{- end -}}
-
-{{- /* 处理循环播放 */ -}}
+{{- if $rawParams -}}{{- $paramsList = $paramsList | append $rawParams -}}{{- end -}}
+{{- if $mute -}}{{- $paramsList = $paramsList | append "mute=1" -}}{{- end -}}
 {{- if $repeat -}}
   {{- $paramsList = $paramsList | append "loop=1" -}}
-  {{- /* YouTube 强制要求：单视频循环必须指定 playlist 参数为自身 ID */ -}}
-  {{- if not $playlist -}}
-     {{- $paramsList = $paramsList | append (printf "playlist=%s" $videoId) -}}
-  {{- end -}}
+  {{- if not $playlist -}}{{- $paramsList = $paramsList | append (printf "playlist=%s" $videoId) -}}{{- end -}}
 {{- end -}}
-
-{{- /* 处理播放列表 */ -}}
-{{- if $playlist -}}
-  {{- $paramsList = $paramsList | append (printf "playlist=%s" $playlist) -}}
-{{- end -}}
-
-{{- /* 将列表合并为 URL 参数字符串 (例如: mute=1&loop=1) */ -}}
+{{- if $playlist -}}{{- $paramsList = $paramsList | append (printf "playlist=%s" $playlist) -}}{{- end -}}
 {{- $finalParams := delimit $paramsList "&" -}}
 
 
@@ -45,13 +39,19 @@
   <lite-youtube
     videoid="{{ $videoId }}"
     videotitle="{{ $title }}"
-    class="{{ $class }}"
+    class="{{ $finalClass }}"
     {{ with $finalParams }}params="{{ . }}"{{ end }}
-    {{ if not $image }}style="background-image: url('https://i.ytimg.com/vi/{{ $videoId }}/hqdefault.jpg');"{{ end }}
+    {{/* CLS 优化：
+       虽然我们在 CSS 里设置了 aspect-video 占位，但背景图加载也可能导致轻微闪烁。
+       如果使用 YouTube 默认封面，它会很快。
+       如果使用自定义 image slot，下面的 style background-image 会被 slot 内容覆盖，不影响。
+    */}}
+    {{ if not $image }}style="background-image: url('https://i.ytimg.com/vi/{{ $videoId }}/hqdefault.jpg'); background-size: cover;"{{ end }}
   >
-    {{- /* 自定义封面 */ -}}
+    {{- /* 自定义封面 (保持不变) */ -}}
     {{- if $image -}}
-      <img slot="image" src="{{ $image | absURL }}" alt="{{ $title }}" style="width:100%; height:100%; object-fit:cover;" loading="lazy" />
+      {{/* 这里的类确保图片撑满占位容器 */}}
+      <img slot="image" src="{{ $image | absURL }}" alt="{{ $title }}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
     {{- end -}}
 
     <a href="https://youtube.com/watch?v={{ $videoId }}" class="lty-playbtn" title="{{ $title }}">
