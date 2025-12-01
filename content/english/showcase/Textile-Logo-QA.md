@@ -15,7 +15,6 @@ draft: false
 In the fast-paced apparel industry, maintaining brand consistency is paramount. However, quality control for logos and prints on textiles is a notoriously difficult task. Fabric is not a rigid material; its inherent properties introduce a host of problems for traditional automated inspection systems.
 
 Key challenges include:
-{{< slider dir="images/textile-logo-qa/challenges" class="max-w-[300px] ml-0"  height="300" width="300" webp="true"  option="" zoomable="true" >}}
 
 *   **Deformation and Displacement:** Textiles can stretch, shrink, and warp during manufacturing, causing the logo to appear distorted or shifted compared to the original design.
 *   **Inconsistent Lighting:** The perceived color and brightness of a logo can change dramatically due to shifting ambient light in a workshop, such as from personnel movement or time of day.
@@ -24,9 +23,10 @@ Key challenges include:
 ### The Solution: A Multi-Stage Machine Vision Pipeline
 
 The DiffScanner project tackles these industry-specific challenges head-on with a sophisticated pipeline that leverages both classic machine vision and modern machine learning techniques. It intelligently preprocesses and aligns images before comparison, ensuring that only meaningful differences are flagged.
+{{< slider dir="images/textile-logo-qa/challenges" class="max-w-[400px] mx-auto"  height="200" width="400" webp="true"   option="" zoomable="true" >}}{{< slider dir="images/textile-logo-qa/solution" class="max-w-[400px] mx-auto" height="200" width="400" webp="true"  option="" zoomable="true" >}}
 
 Our approach consists of several key stages:
-{{< slider dir="images/textile-logo-qa/solution" class="max-w-[300px] ml-0" height="300" width="300" webp="true"  option="" zoomable="true" >}}
+
 1.  **Robust Image Alignment:** To counter stretching and displacement, we employ a two-step alignment process.
     *   **Global Alignment:** Using the Scale-Invariant Feature Transform (SIFT) algorithm, the system identifies unique feature points in both the template and the inspection image. It then computes a homography matrix to correct for large-scale rotation, scaling, and perspective distortion.
     *   **Fine-Grained Correction:** To handle subtle, non-rigid warping characteristic of fabric, we then apply a Dense Optical Flow algorithm. This technique calculates the precise displacement of each pixel, effectively "stretching" the inspection image to perfectly match the template on a local level.
