@@ -7,7 +7,7 @@ draft: false
 ---
 
 
-{{< image src="images/C2R.png" caption="" alt="alter-text" height="" width="" position="center" command="fill" option="q100" class="img-fluid" title="image title"  webp="false" >}}
+{{< image src="images/mota-c2r.png" caption="" alt="alter-text" height="" width="" position="center" command="fill" option="q100" class="img-fluid" title="image title"  webp="false" >}}
 
 MOTA TECHLINK exists to fix hardware development by providing a single, reliable partner that takes projects from sketch to global market, prioritizing trust and speed.
 
