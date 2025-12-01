@@ -23,7 +23,7 @@ Key challenges include:
 ### The Solution: A Multi-Stage Machine Vision Pipeline
 
 The DiffScanner project tackles these industry-specific challenges head-on with a sophisticated pipeline that leverages both classic machine vision and modern machine learning techniques. It intelligently preprocesses and aligns images before comparison, ensuring that only meaningful differences are flagged.
-{{< slider dir="images/textile-logo-qa/challenges" class="max-w-[400px] mx-auto"  height="200" width="400" webp="true"   option="" zoomable="true" >}}{{< slider dir="images/textile-logo-qa/solution" class="max-w-[400px] mx-auto" height="200" width="400" webp="true"  option="" zoomable="true" >}}
+{{< slider dir="images/textile-logo-qa/challenges" class="max-w-[800px] mx-auto"  height="200" width="300" webp="true"   option="" zoomable="true" >}}{{< slider dir="images/textile-logo-qa/solution" class="max-w-[800px] mx-auto" height="200" width="300" webp="true"  option="" zoomable="true" >}}
 
 Our approach consists of several key stages:
 
