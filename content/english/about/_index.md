@@ -2,9 +2,12 @@
 title: "The Full Stack Advantage: Expertise, Trust, and Global Reach."
 meta_title: "About"
 description: "MOTA TECHLINK exists to fix hardware development by providing a single, reliable partner that takes projects from sketch to global market, prioritizing trust and speed"
-image: "/images/MOTA-bridge.jpg"
+image: "/images/MOTA-MATEL.png"
 draft: false
 ---
+
+
+{{< image src="images/MOTA-C2R.png" caption="" alt="alter-text" height="" width="" position="center" command="fill" option="q100" class="img-fluid" title="image title"  webp="false" >}}
 
 MOTA TECHLINK exists to fix hardware development by providing a single, reliable partner that takes projects from sketch to global market, prioritizing trust and speed.
 

@@ -88,6 +88,41 @@
   {{ end }}
   <!-- /Features -->
 
+  <!-- Latest Posts -->
+  {{ with site.GetPage "sections/latest-posts" }}
+    {{ if .Params.enable }}
+      <section class="section">
+        <div class="container">
+          <div class="row">
+            <div class="mx-auto mb-12 text-center md:col-10 lg:col-8 xl:col-6">
+              <h2 class="mb-4">
+                {{ .Title | markdownify }}
+              </h2>
+              <p>
+                {{ .Params.description | markdownify }}
+              </p>
+            </div>
+            <div class="col-12">
+              <div class="row">
+                {{ $latest_posts := union (where site.RegularPages "Type" "blog" | first 3) (where site.RegularPages "Type" "showcase" | first 3) }}
+                {{ range $latest_posts }}
+                  <div class="md:col-6 lg:col-4 mb-14">
+                    {{ if eq .Type "blog" }}
+                      {{ partial "components/blog-card" . }}
+                    {{ else if eq .Type "showcase" }}
+                      {{ partial "components/showcase-card" . }}
+                    {{ end }}
+                  </div>
+                {{ end }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    {{ end }}
+  {{ end }}
+  <!-- /Latest Posts -->
+
   <!-- Testimonials -->
   {{ with site.GetPage "sections/testimonial" }}
     {{ if .Params.enable }}
