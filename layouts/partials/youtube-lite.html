@@ -50,8 +50,11 @@
   >
     {{- /* 自定义封面 (保持不变) */ -}}
     {{- if $image -}}
-      {{/* 这里的类确保图片撑满占位容器 */}}
-      <img slot="image" src="{{ $image | absURL }}" alt="{{ $title }}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+      {{- $imgSrc := $image | absURL -}}
+      {{- with resources.Get $image -}}
+        {{- $imgSrc = .RelPermalink -}}
+      {{- end -}}
+      <img slot="image" src="{{ $imgSrc }}" alt="{{ $title }}" class="absolute inset-0 w-full h-full object-cover" loading="lazy" />      
     {{- end -}}
 
     <a href="https://youtube.com/watch?v={{ $videoId }}" class="lty-playbtn" title="{{ $title }}">

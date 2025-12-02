@@ -6,7 +6,18 @@
           {{ $image:= .Params.image }}
           {{ if $image }}
             <div class="mb-10">
-              {{ partial "image" (dict "Src" $image "Context" .Page "Alt" .Title "Class" "w-full rounded") }}
+              {{ if .Params.youtube_id }}
+                {{ partial "youtube-lite" (dict 
+                      "videoid" .Params.youtube_id 
+                      "title"   .Params.title
+                      "image"   .Params.image                  
+                      "mute"    true 
+                      "repeat"  true                              
+                  ) }}    
+                {{ else }}
+                  {{/*  {{ partial "image" (dict "Src" .image "Alt" "Banner image" "Loading" "eager" "Class" "mx-auto lg:!max-w-[800px]" "DisplayXL" "800x" ) }}  */}}
+                  {{ partial "image" (dict "Src" $image "Context" .Page "Alt" .Title "Class" "w-full rounded") }}
+                {{ end }}              
             </div>
           {{ end }}
           <h1 class="h2 mb-4">

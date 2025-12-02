@@ -3,13 +3,14 @@ title: "Advanced AI-Powered Quality Assurance for Textile Logos"
 meta_title: "AI-Powered Quality Assurance for the Textile Industry"
 description: "Overcoming challenges like fabric deformation, lighting variation, and texture interference in textile logo inspection using advanced machine vision."
 date: 2025-12-01T00:00:00Z
-image: "/images/textile-logo-qa/textile_logo_qa.png"
+youtube_id: "0uf0jkfYprM"
+image: "/images/showcase/textile-logo-qa/textile_logo_qa.jpg"
 categories: ["Showcase"]
 tags: ["Computer Vision", "Quality Assurance", "Textile", "AI"]
 draft: false
 ---
 
-{{< youtube 0uf0jkfYprM >}}
+<!-- {{< youtube 0uf0jkfYprM >}} -->
 ### The Challenge: Ensuring Brand Consistency on Textiles
 
 In the fast-paced apparel industry, maintaining brand consistency is paramount. However, quality control for logos and prints on textiles is a notoriously difficult task. Fabric is not a rigid material; its inherent properties introduce a host of problems for traditional automated inspection systems.
@@ -23,7 +24,7 @@ Key challenges include:
 ### The Solution: A Multi-Stage Machine Vision Pipeline
 
 The DiffScanner project tackles these industry-specific challenges head-on with a sophisticated pipeline that leverages both classic machine vision and modern machine learning techniques. It intelligently preprocesses and aligns images before comparison, ensuring that only meaningful differences are flagged.
-{{< slider dir="images/textile-logo-qa/challenges" class="max-w-[800px] mx-auto"  height="200" width="300" webp="true"   option="" zoomable="true" >}}{{< slider dir="images/textile-logo-qa/solution" class="max-w-[800px] mx-auto" height="200" width="300" webp="true"  option="" zoomable="true" >}}
+{{< slider dir="images/showcase/textile-logo-qa/challenges" class="max-w-[800px] mx-auto"  height="200" width="300" webp="true"   option="" zoomable="true" >}}{{< slider dir="images/showcase/textile-logo-qa/solution" class="max-w-[800px] mx-auto" height="200" width="300" webp="true"  option="" zoomable="true" >}}
 
 Our approach consists of several key stages:
 
