@@ -16,15 +16,15 @@ name = "Showcase"
 url = "/showcase"
 weight = 3
 
-[[main]]
-name = "Categories"
-url = "/categories"
-weight = 4
+# [[main]]
+# name = "Categories"
+# url = "/categories"
+# weight = 4
 
 [[main]]
 name = "Chat"
 url = "/chatbot"
-weight = 5
+weight = 4
 
 # [[main]]
 # name = "Elements"
