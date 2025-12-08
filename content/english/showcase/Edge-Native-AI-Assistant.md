@@ -1,5 +1,5 @@
 ---
-title: "Edge-Native AI Assistant: Enterprise RAG Solution on Cloudflare"
+title: "Edge-Native AI Assistant: Enterprise RAG Solution"
 date: 2025-11-16T10:00:00+08:00
 image: "/images/showcase/chatbot/chatbot-cover.jpg" # 请替换为您实际的架构图或截图路径
 summary: "A high-performance, serverless AI chatbot built entirely on Cloudflare's edge network. Features Retrieval-Augmented Generation (RAG), custom OAuth 2.0 security, and real-time streaming, delivering enterprise-grade AI interactions at a fraction of the cost."
