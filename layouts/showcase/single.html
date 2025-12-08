@@ -3,6 +3,9 @@
     <div class="container">
       <div class="row justify-center">
         <article class="lg:col-10">
+          <h1 class="h2 mb-4">
+            {{ .Title }}
+          </h1>
           {{ $image:= .Params.image }}
           {{ if $image }}
             <div class="mb-10">
@@ -20,9 +23,6 @@
                 {{ end }}              
             </div>
           {{ end }}
-          <h1 class="h2 mb-4">
-            {{ .Title }}
-          </h1>
           <ul class="mb-4">
             {{ $categories:= .Params.categories }}
             {{ if $categories }}
