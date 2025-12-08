@@ -1,7 +1,7 @@
 ---
 title: "Edge-Native AI Assistant: Enterprise RAG Solution"
 date: 2025-11-16T10:00:00+08:00
-image: "/images/showcase/chatbot/chatbot-cover.jpg" # 请替换为您实际的架构图或截图路径
+image: "/images/showcase/chatbot/chatbot-cover.jpg" 
 summary: "A high-performance, serverless AI chatbot built entirely on Cloudflare's edge network. Features Retrieval-Augmented Generation (RAG), custom OAuth 2.0 security, and real-time streaming, delivering enterprise-grade AI interactions at a fraction of the cost."
 meta_title: "Edge-Native AI RAG Chatbot Case Study - MOTA TECHLINK"
 tags: ["AI", "RAG", "Cloudflare", "Serverless", "Edge Computing"]
@@ -31,7 +31,7 @@ In the era of Generative AI, businesses need
 
 **MOTA TECHLINK** engineered a full-stack, edge-native AI solutionthat leverages **Retrieval-Augmented Generation (RAG)** to provide accurate, context-aware answers based on private corporate data. By bypassing traditional heavy servers and utilizing Cloudflare's global edge network, we achieved unparalleled performance and cost efficiency.
 
-##### <span style="color: orange;"> TALK  WITH  MOTA BOT [🤖](https://motaiot.com/chatbot/) </span>
+##### <span style="  background-image: linear-gradient(to right,  yellow,orange);  -webkit-background-clip: text;  color: transparent;  font-weight: bold;">  TALK to BOT [🤖](https://motaiot.com/chatbot/) </span>
 
 ## The Challenge
 
