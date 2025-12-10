@@ -34,11 +34,7 @@ We utilized Multimodal Large Language Models (LLMs) and diffusion models to gene
 * **Privacy by Design:** Since the humans in the training data are AI-generated, there are no privacy or consent issues.
 * **Edge Case Coverage:** We synthetically generated rare scenarios, such as motocycles covered by raincoats or viewed from extreme top-down angles.
 * **Industry Validation:** This data-centric strategy mirrors the <span style="  background-image: linear-gradient(to right,  orange, red);  -webkit-background-clip: text;  color: transparent;  font-weight: normal;">advanced methodologies employed by Tesla, who utilize generative simulation and synthetic data to [train their Autopilot systems](https://bernardmarr.com/how-tesla-is-using-artificial-intelligence-to-create-the-autonomous-cars-of-the-future/) </span> for rare "corner cases" that are statistically improbable to capture in the real world. This proves that synthetic data is not just a workaround, but a superior path to robustness.  
-{{< gif-video src="/videos/GenAI.mp4" align="left" >}}
-
-
-
-
+{{< gif-video src="/videos/GenAI_compressed.mp4" align="left" >}}
 
 ### 2. Automated Annotation Pipeline
 Manual labeling is the bottleneck of AI training. We integrated the <span style= "color: green">Segment Anything Model</span>[(SAM3)](https://github.com/facebookresearch/sam3) into our pipeline.
