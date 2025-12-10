@@ -41,7 +41,7 @@ We utilized Multimodal Large Language Models (LLMs) and diffusion models to gene
 
 
 ### 2. Automated Annotation Pipeline
-Manual labeling is the bottleneck of AI training. We integrated the <span style= "color: green">Segment Anything Model</span>[(SAM3)](https://ai.meta.com/sam3/) into our pipeline.
+Manual labeling is the bottleneck of AI training. We integrated the <span style= "color: green">Segment Anything Model</span>[(SAM3)](https://github.com/facebookresearch/sam3) into our pipeline.
 * **Auto-Segmentation:** SAM automatically generated pixel-perfect bounding boxes and segmentation masks for the synthetic dataset.
 * **Efficiency:** This automation reduced data preparation time by **90%** while ensuring consistent label quality that outperforms human annotators.
 {{< image src="images/showcase/Edge-Computing/SAM.jpg" caption="" alt="alter-text" height="" width="" position="center" command="fill" option="q100" class="img-fluid" title="Automated Annotation"  webp="false" >}}
