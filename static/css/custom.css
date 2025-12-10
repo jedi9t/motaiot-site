@@ -1,0 +1,49 @@
+/* static/css/custom.css */
+
+/* 基础容器样式 */
+.video-container {
+    display: block;
+    margin-bottom: 1.5rem; /* 底部留白 */
+    overflow: hidden; /* 防止圆角溢出等问题 */
+}
+
+/* 视频标签强制 100% 撑满容器，宽度由容器 figure 决定 */
+.video-container video {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px; /* 可选：给视频加个圆角，更精致 */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* 可选：加一点阴影 */
+}
+
+/* --- 对齐方式 --- */
+
+/* 居中对齐 (默认) */
+.align-center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 靠左对齐 (文字环绕) */
+.align-left {
+    float: left;
+    margin-right: 1.5rem; /* 右边留出空隙给文字 */
+    margin-bottom: 1rem;
+}
+
+/* 靠右对齐 (文字环绕) */
+.align-right {
+    float: right;
+    margin-left: 1.5rem; /* 左边留出空隙给文字 */
+    margin-bottom: 1rem;
+}
+
+/* 移动端优化：在手机上强制全宽，取消浮动，防止排版错乱 */
+@media (max-width: 768px) {
+    .align-left, .align-right {
+        float: none;
+        width: 100% !important;
+        margin-left: 0;
+        margin-right: 0;
+    }
+}

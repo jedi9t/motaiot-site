@@ -22,7 +22,7 @@ draft: false
 
 In the era of Generative AI, businesses need 
 <span style="
-  background-image: linear-gradient(to right,  orange, yellow);
+  background-image: linear-gradient(to right,  red, orange);
   -webkit-background-clip: text;
   color: transparent;
   font-weight: bold;
@@ -31,7 +31,7 @@ In the era of Generative AI, businesses need
 
 **MOTA TECHLINK** engineered a full-stack, edge-native AI solutionthat leverages **Retrieval-Augmented Generation (RAG)** to provide accurate, context-aware answers based on private corporate data. By bypassing traditional heavy servers and utilizing Cloudflare's global edge network, we achieved unparalleled performance and cost efficiency.
 
-##### <span style="  background-image: linear-gradient(to right,  yellow,orange);  -webkit-background-clip: text;  color: transparent;  font-weight: bold;">  TALK to BOT [🤖](https://motaiot.com/chatbot/) </span>
+##### <span style="  background-image: linear-gradient(to right,  orange, red);  -webkit-background-clip: text;  color: transparent;  font-weight: bold;">  TALK to BOT [🤖](https://motaiot.com/chatbot/) </span>
 
 ## The Challenge
 
