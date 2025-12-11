@@ -1,0 +1,186 @@
+{{ define "main" }}
+
+{{ partial "page-header" . }}
+
+<section class="section">
+  <div class="container">
+    <div class="row justify-between">
+      
+      <div class="mb-10 lg:col-5 lg:mb-0">
+        <h2 class="h3 mb-6">Let's Connect</h2>
+        <div class="content mb-6">
+          {{ .Content }}
+        </div>
+        
+        <ul class="pl-0 space-y-4">
+          <li class="flex items-center">
+             <span class="mr-3 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+             </span>
+             <span>contact@motatechlink.com</span>
+          </li>
+          <li class="flex items-center">
+             <span class="mr-3 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+             </span>
+             <span> 1329 Willoughby Ave <br/>
+             Brooklyn, New York,  U.S.A </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="lg:col-6">
+        <div class="rounded-lg bg-theme-light p-8 dark:bg-darkmode-theme-light shadow-lg">
+          <form id="contact-form" class="space-y-6">
+            
+            <div>
+              <label for="name" class="form-label block mb-2 font-bold">
+                Full Name <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="name"
+                name="name"
+                class="form-input w-full rounded-md border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 dark:bg-darkmode-theme-dark dark:border-gray-600"
+                placeholder="John Doe"
+                type="text"
+                required />
+            </div>
+
+            <div>
+              <label for="email" class="form-label block mb-2 font-bold">
+                Working Mail <span class="text-red-500">*</span>
+              </label>
+              <input
+                id="email"
+                name="email"
+                class="form-input w-full rounded-md border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 dark:bg-darkmode-theme-dark dark:border-gray-600"
+                placeholder="john.doe@motatechlink.com"
+                type="email"
+                required />
+            </div>
+
+            <div>
+              <label for="message" class="form-label block mb-2 font-bold">
+                How can we help? <span class="text-red-500">*</span>
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                class="form-input w-full rounded-md border-gray-300 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-50 dark:bg-darkmode-theme-dark dark:border-gray-600"
+                placeholder="Tell us about your project..."
+                rows="6"
+                required></textarea>
+            </div>
+
+            <div class="relative">
+                <button type="submit" id="submit-btn" class="btn btn-primary w-full transition-all duration-300 flex justify-center items-center">
+                    <span>Send Message</span>
+                    <svg id="loading-spinner" class="animate-spin ml-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+                
+                <div id="form-status" class="mt-4 hidden p-3 rounded text-center text-sm font-medium"></div>
+            </div>
+            
+            <p class="text-xs text-gray-400 mt-4 text-center">
+                Your data is secure. We use MOTA Techlink's Edge AI security protocols.
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{{ with site.Params.google_map }}
+  {{ if .enable }}
+    <section class="section pb-0">
+      <div
+        id="map"
+        style="height: 400px;"
+        class="w-full grayscale filter hover:grayscale-0 transition-all duration-500"
+        data-latitude="{{ .map_latitude }}"
+        data-longitude="{{ .map_longitude }}"
+        data-marker="{{ .map_marker | relURL }}"
+        data-marker-name="{{ site.Title }}"></div>
+    </section>
+  {{ end }}
+{{ end }}
+
+{{ if site.Params.google_map.enable }}
+  {{ $gmap:= resources.Get "plugins/maps/google-map.js" }}
+  <script defer src="{{ $gmap.RelPermalink }}"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ site.Params.google_map.map_api_key }}&libraries=places"></script>
+{{ end }}
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('contact-form');
+    const btn = document.getElementById('submit-btn');
+    const spinner = document.getElementById('loading-spinner');
+    const btnText = btn.querySelector('span');
+    const status = document.getElementById('form-status');
+
+    if (!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // 1. UI 进入 Loading 状态
+        btn.disabled = true;
+        btnText.textContent = 'Sending...';
+        spinner.classList.remove('hidden');
+        status.classList.add('hidden'); // 隐藏之前的状态
+        status.className = "mt-4 hidden p-3 rounded text-center text-sm font-medium"; // 重置样式
+
+        // 2. 准备数据
+        const formData = new FormData(form);
+
+        try {
+            // 3. 发送到 Cloudflare Functions
+            // 假设您的后端文件是 functions/submit-contact.js，路由通常就是 /submit-contact
+            const response = await fetch('/submit-contact', { 
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // 4. 成功处理
+                status.textContent = 'Message sent successfully! We will contact you shortly.';
+                status.classList.remove('hidden');
+                status.classList.add('bg-green-100', 'text-green-700', 'dark:bg-green-900', 'dark:text-green-100');
+                form.reset(); // 清空表单
+                
+                // 3秒后恢复按钮状态，但保留成功提示
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btnText.textContent = 'Send Another Message';
+                    spinner.classList.add('hidden');
+                }, 1000);
+
+            } else {
+                throw new Error(result.error || 'Server responded with error');
+            }
+
+        } catch (error) {
+            // 5. 失败处理
+            console.error('Submission Error:', error);
+            status.textContent = 'Failed to send: ' + (error.message || 'Unknown error. Please try again or email us directly.');
+            status.classList.remove('hidden');
+            status.classList.add('bg-red-100', 'text-red-700', 'dark:bg-red-900', 'dark:text-red-100');
+            
+            // 恢复按钮以便重试
+            btn.disabled = false;
+            btnText.textContent = 'Try Again';
+            spinner.classList.add('hidden');
+        }
+    });
+});
+</script>
+
+{{ end }}

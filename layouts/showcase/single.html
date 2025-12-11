@@ -6,6 +6,7 @@
           <h1 class="h2 mb-4">
             {{ .Title }}
           </h1>
+
           {{ $image:= .Params.image }}
           {{ if $image }}
             <div class="mb-10">
@@ -51,7 +52,7 @@
             {{ $tags:= .Params.tags }}
             {{ if $tags }}
               <div class="lg:col-6 mb-10 flex items-center lg:mb-0">
-                <h5 class="mr-3">{{ T "tags" }} :</h5>
+                <h5 class="mr-3">{{ T "tags" }}:</h5>
                 <ul>
                   {{ range $i,$p:= $tags }}
                     <li class="inline-block">
@@ -66,7 +67,7 @@
               </div>
             {{ end }}
             <div class="lg:col-6 flex items-center lg:justify-end">
-              <h5>{{ T "share" }} :</h5>
+              <h5>{{ T "share" }}:</h5>
               {{ partial "social-share" (dict "Context" . "Class" "share-icons" "Title" .Title "Whatsapp" false "Telegram" false "Linkedin" false "Pinterest" false "Tumblr" false "Vk" false "Reddit" false) }}
             </div>
           </div>
