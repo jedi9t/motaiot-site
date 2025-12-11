@@ -111,10 +111,10 @@
 
 {{ if site.Params.google_map.enable }}
   {{ $gmap:= resources.Get "plugins/maps/google-map.js" }}
-  <script defer src="{{ $gmap.RelPermalink }}" data-cfasync="false"></script>
-  
-  <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ site.Params.google_map.map_api_key }}&libraries=places" data-cfasync="false"></script>
+  <script defer src="{{ $gmap.RelPermalink }}"></script>
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ site.Params.google_map.map_api_key }}&libraries=places"></script>
 {{ end }}
+
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
