@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
         // 发件人：必须是您的域名
         from: "MOTA Website System <website@motaiot.com>", 
         // 收件人：您的 Google Workspace 邮箱
-        to: ["harling909@outlook.com"], 
+        to: ["contact@motaiot.com"], 
         // 关键：设置 Reply-To 为用户的邮箱，方便您直接回复
         reply_to: email, 
         subject: `[New Inquiry] Message from ${name}`,
