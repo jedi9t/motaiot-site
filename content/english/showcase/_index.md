@@ -1,4 +1,4 @@
 ---
 title: "Showcase"
-description: "This is the showcase page"
+description: "Demonstrate showcases of MOTA TECHLINK"
 ---

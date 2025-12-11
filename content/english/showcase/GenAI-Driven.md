@@ -4,7 +4,7 @@ meta_title: "GenAI & Edge AI for Smart Elevator Safety - MOTA TECHLINK"
 description: "Revolutionizing object detection with synthetic data generation and NPU quantization for real-time electric scooter detection in elevators. A privacy-first, low-latency Edge AI solution."
 date: 2025-12-08T00:00:00Z
 image: "/images/showcase/Edge-Computing/GenAI-Cover.png"
-categories: ["Case Study", "Edge AI"]
+categories: ["Edge AI", "IOT","AI Engineering"]
 tags: ["GenAI", "Edge Computing", "Computer Vision", "NPU", "IoT", "Synthetic Data"]
 draft: false
 ---

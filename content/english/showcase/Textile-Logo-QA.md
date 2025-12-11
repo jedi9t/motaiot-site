@@ -5,7 +5,7 @@ description: "Overcoming challenges like fabric deformation, lighting variation,
 date: 2025-12-01T00:00:00Z
 youtube_id: "0uf0jkfYprM"
 image: "/images/showcase/textile-logo-qa/textile_logo_qa.jpg"
-categories: ["Showcase"]
+categories: ["AI Engineering","Edge AI"]
 tags: ["Computer Vision", "Quality Assurance", "Textile", "AI"]
 draft: false
 ---

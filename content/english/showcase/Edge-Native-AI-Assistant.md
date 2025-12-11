@@ -5,7 +5,7 @@ image: "/images/showcase/chatbot/chatbot-cover.jpg"
 summary: "A high-performance, serverless AI chatbot built entirely on Cloudflare's edge network. Features Retrieval-Augmented Generation (RAG), custom OAuth 2.0 security, and real-time streaming, delivering enterprise-grade AI interactions at a fraction of the cost."
 meta_title: "Edge-Native AI RAG Chatbot Case Study - MOTA TECHLINK"
 tags: ["AI", "RAG", "Cloudflare", "Serverless", "Edge Computing"]
-categories: ["Case Study", "AI Engineering"]
+categories: ["AI Engineering"]
 draft: false
 ---
 <!-- <span style="

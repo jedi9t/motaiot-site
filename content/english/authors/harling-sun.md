@@ -2,7 +2,7 @@
 title: Harling Sun
 email: harling909@gmail.com
 image: "/images/auth-hs-avatar.jpg"
-description: this is meta description
+description: "this is author description of MOTA TECHLINK"
 social:
   - name: github
     icon: fa-brands fa-github
