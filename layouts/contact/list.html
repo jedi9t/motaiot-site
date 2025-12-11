@@ -142,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // 3. 发送到 Cloudflare Functions
             // 假设您的后端文件是 functions/submit-contact.js，路由通常就是 /submit-contact
-            const response = await fetch('/submit-contact', { 
+            const response = await fetch('/api/submit-contact', { 
                 method: 'POST',
                 body: formData
             });
