@@ -25,12 +25,12 @@ export async function onRequestPost(context) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 关键点：From 必须是您在 Resend 验证过的域名地址，例如 system@motatechlink.com
+        // 关键点：From 必须是您在 Resend 验证过的域名地址，例如 system@motaiot.com
         // 即使该邮箱在 Google Workspace 中不存在也没关系，只要 DNS 验证过即可。
-        from: "MOTA TECHLINK Contact <website@motatechlink.com>", 
+        from: "MOTA TECHLINK Contact <website@motaiot.com>", 
         
         // To 发送到您真正的 Google Workspace 邮箱
-        to: ["contact@motatechlink.com"], // 替换为您新注册的 Google 邮箱
+        to: ["contact@motaiot.com"], // 替换为您新注册的 Google 邮箱
         
         // Reply-To 设置为访客邮箱，这样您在 Gmail 点击回复时，直接回复给客户
         reply_to: email, 
