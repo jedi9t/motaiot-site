@@ -1,41 +1,36 @@
-// functions/submit-contact.js
-
 export async function onRequestPost(context) {
   const { request, env } = context;
 
   try {
     const formData = await request.formData();
     const name = formData.get("name");
-    const email = formData.get("email"); // 访客填写的邮箱
+    const email = formData.get("email"); // 用户填写的邮箱
     const message = formData.get("message");
 
-    // 简单验证
     if (!name || !email || !message) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), { 
+      return new Response(JSON.stringify({ error: "Missing required fields" }), {
         status: 400,
         headers: { "Content-Type": "application/json" }
       });
     }
 
-    // 调用 Resend API 发送邮件
-    const res = await fetch("https://api.resend.com/emails", {
+    // ----------------------------------------------------
+    // 邮件 1: 发送给管理员 (通知邮件)
+    // ----------------------------------------------------
+    const sendToAdmin = fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        // 关键点：From 必须是您在 Resend 验证过的域名地址，例如 system@motaiot.com
-        // 即使该邮箱在 Google Workspace 中不存在也没关系，只要 DNS 验证过即可。
-        from: "MOTA TECHLINK Contact <website@motaiot.com>", 
-        
-        // To 发送到您真正的 Google Workspace 邮箱
-        to: ["contact@motaiot.com"], // 替换为您新注册的 Google 邮箱
-        
-        // Reply-To 设置为访客邮箱，这样您在 Gmail 点击回复时，直接回复给客户
+        // 发件人：必须是您的域名
+        from: "MOTA Website System <website@motaiot.com>", 
+        // 收件人：您的 Google Workspace 邮箱
+        to: ["harling909@outlook.com"], 
+        // 关键：设置 Reply-To 为用户的邮箱，方便您直接回复
         reply_to: email, 
-        
-        subject: `New Inquiry from ${name}`,
+        subject: `[New Inquiry] Message from ${name}`,
         html: `
           <h3>New Contact Form Submission</h3>
           <p><strong>Name:</strong> ${name}</p>
@@ -48,15 +43,54 @@ export async function onRequestPost(context) {
       }),
     });
 
-    const data = await res.json();
+    // ----------------------------------------------------
+    // 邮件 2: 发送给用户 (自动回复/确认邮件)
+    // ----------------------------------------------------
+    const sendToUser = fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        // 发件人：展示给用户看，显得专业
+        from: "MOTA TECHLINK Support <contact@motaiot.com>", 
+        // 收件人：用户填写的邮箱
+        to: [email], 
+        subject: `We've received your message, ${name}`,
+        html: `
+          <div style="font-family: sans-serif; color: #333;">
+            <h2>Thank you for contacting MOTA TECHLINK!</h2>
+            <p>Hi ${name},</p>
+            <p>This is an automated message to confirm that we have received your inquiry.</p>
+            <p>Our team will review your message and get back to you within 24 hours.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <p style="font-size: 12px; color: #666;">
+              <strong>Your Message:</strong><br>
+              ${message}
+            </p>
+            <p style="margin-top: 30px;">
+              Best regards,<br>
+              <strong>The MOTA TECHLINK Team</strong><br>
+              <a href="https://motaiot.com">www.motaiot.com</a>
+            </p>
+          </div>
+        `,
+      }),
+    });
 
-    if (!res.ok) {
-      throw new Error(data.message || "Failed to send email");
+    // 并行发送两封邮件，提高效率
+    const [adminRes, userRes] = await Promise.all([sendToAdmin, sendToUser]);
+
+    // 只要发给管理员的成功了，就算提交成功
+    if (!adminRes.ok) {
+      const errorData = await adminRes.json();
+      throw new Error(errorData.message || "Failed to send notification email");
     }
+    
+    // (可选) 检查发给用户的邮件是否成功，通常不需要抛出错误阻断流程
 
-    // 成功后，您可以选择重定向到一个感谢页面，或者返回 JSON 让前端处理
-    // 这里示例返回 JSON
-    return new Response(JSON.stringify({ success: true, id: data.id }), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
