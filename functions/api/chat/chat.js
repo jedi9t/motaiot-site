@@ -4,7 +4,7 @@
 const EMBEDDING_MODEL = "@cf/baai/bge-small-en-v1.5";
 // Workers AI LLM 推理模型 (用于生成最终回复)
 const INFERENCE_MODEL = "@cf/meta/llama-3-8b-instruct"; 
-const RAG_INDEX_NAME = "mota-steep-math-2e65"; // 您的 AutoRAG 索引 ID
+const RAG_INDEX_NAME = "red-waterfall-61ed"; // 您的 AutoRAG 索引 ID; mota-steep-math-2e65
 
 // ----------------------------------------------------
 // 辅助函数：会话验证 (必须存在)
