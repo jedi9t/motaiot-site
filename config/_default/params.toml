@@ -100,6 +100,7 @@ sidebar = ["categories", "tags"]
 [google_map]
 enable = true
 map_api_key = "AIzaSyCSootNMA6vyeE1HRdXBO6VdbQcJz54nBw"
+map_zoom = 11
 map_latitude = "40.7065032"
 map_longitude = "-73.9209374"
 map_marker = "images/beachflag.png"

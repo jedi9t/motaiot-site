@@ -7,7 +7,7 @@
     <div class="row justify-between">
       
       <div class="mb-10 lg:col-5 lg:mb-0">
-        <h2 class="h3 mb-6">Let's Connect</h2>
+        <h2 class="h3 mb-6">Ready to Accelerate? Contact us to get solution</h2>
         <div class="content mb-6">
           {{ .Content }}
         </div>
@@ -96,23 +96,21 @@
 
 {{ with site.Params.google_map }}
   {{ if .enable }}
-    <section class="section pb-0">
       <div
         id="map"
-        style="height: 400px;"
-        class="w-full grayscale filter hover:grayscale-0 transition-all duration-500"
+        style="height: 300px; width: 100%; margin: 0 auto;"
         data-latitude="{{ .map_latitude }}"
         data-longitude="{{ .map_longitude }}"
+        data-zoom="{{ .map_zoom | default 9 }}"
         data-marker="{{ .map_marker | relURL }}"
         data-marker-name="{{ site.Title }}"></div>
-    </section>
   {{ end }}
 {{ end }}
 
 {{ if site.Params.google_map.enable }}
   {{ $gmap:= resources.Get "plugins/maps/google-map.js" }}
-  <script defer src="{{ $gmap.RelPermalink }}"></script>
-  <script src="https://maps.googleapis.com/maps/api/js?key={{ site.Params.google_map.map_api_key }}&libraries=places"></script>
+  <script defer src="{{ $gmap.RelPermalink }}"></script>  
+  <script src="https://maps.googleapis.com/maps/api/js?key={{ site.Params.google_map.map_api_key }}&libraries=places&callback=initMap"></script>  
 {{ end }}
 
 
