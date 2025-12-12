@@ -2,9 +2,9 @@
 # favicon module: https://github.com/gethugothemes/hugo-modules/tree/master/images#favicon-implementation
 favicon = "images/MOTA-icon.png"
 # logo module: https://github.com/gethugothemes/hugo-modules/tree/master/images#logo-implementation
-logo = "images/MOTA-TECHLINK-blk.png"
+logo = "images/mota-logo-blk.png"
 # logo_darkmode = "images/logo-darkmode.png"
-logo_darkmode = "images/MOTA-TECHLINK-wht.png"
+logo_darkmode = "images/mota-logo-wht.png"
 # use `px` or `x` with logo_width, example: "100px".
 # Note: logo_width is not work with .svg file
 logo_width = "160px"
