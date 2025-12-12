@@ -131,15 +131,16 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled = true;
         btnText.textContent = 'Sending...';
         spinner.classList.remove('hidden');
-        status.classList.add('hidden'); // 隐藏之前的状态
-        status.className = "mt-4 hidden p-3 rounded text-center text-sm font-medium"; // 重置样式
+        status.classList.add('hidden'); 
+        status.className = "mt-4 hidden p-3 rounded text-center text-sm font-medium"; 
 
         // 2. 准备数据
         const formData = new FormData(form);
+        // 获取用户填写的邮箱，用于在提示信息中显示
+        const userEmail = formData.get('email'); 
 
         try {
             // 3. 发送到 Cloudflare Functions
-            // 假设您的后端文件是 functions/submit-contact.js，路由通常就是 /submit-contact
             const response = await fetch('/api/submit-contact', { 
                 method: 'POST',
                 body: formData
@@ -148,16 +149,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const result = await response.json();
 
             if (response.ok) {
-                // 4. 成功处理
-                status.textContent = 'Message sent successfully! We will contact you shortly.';
+                // 4. 成功处理 - 更新提示信息 (Requirement 2)
+                // 使用 innerHTML 以便加粗邮箱地址
+                status.innerHTML = `
+                    Message sent! We have sent a confirmation email to <strong>${userEmail}</strong>.<br/>
+                    Please check your inbox. If you don't see it, please verify the spelling of your email, check your Spam/Junk folder, and mark us as a trusted sender.
+                `;
+                
                 status.classList.remove('hidden');
                 status.classList.add('bg-green-100', 'text-green-700', 'dark:bg-green-900', 'dark:text-green-100');
-                form.reset(); // 清空表单
                 
-                // 3秒后恢复按钮状态，但保留成功提示
+                // Requirement 1: 不再清除表单信息
+                // form.reset(); <--- 已注释掉/移除
+                
+                // 恢复按钮状态
                 setTimeout(() => {
                     btn.disabled = false;
-                    btnText.textContent = 'Send Another Message';
+                    btnText.textContent = 'Send Message'; // 保持原样，或者改为 'Send Again'
                     spinner.classList.add('hidden');
                 }, 1000);
 
